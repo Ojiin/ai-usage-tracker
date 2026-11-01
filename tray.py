@@ -19,6 +19,10 @@ class NotifyIconData(c.Structure):
     ]
 
 
+class NotifyIconIdentifier(c.Structure):
+    _fields_ = [("cbSize", w.DWORD), ("hWnd", w.HWND), ("uID", w.UINT), ("guidItem", c.c_byte * 16)]
+
+
 class WindowsTray:
     CALLBACK = 0x8001
     ACTIONS = ((1, "Show tracker", "show"), (2, "Refresh now", "refresh"),
@@ -98,6 +102,16 @@ class WindowsTray:
         self.kernel.GetModuleHandleW.restype = w.HINSTANCE
         self.shell.Shell_NotifyIconW.argtypes = [w.DWORD, c.POINTER(NotifyIconData)]
         self.shell.Shell_NotifyIconW.restype = w.BOOL
+        self.shell.Shell_NotifyIconGetRect.argtypes = [c.POINTER(NotifyIconIdentifier), c.POINTER(w.RECT)]
+        self.shell.Shell_NotifyIconGetRect.restype = c.c_long
+
+    def _icon_rect(self, hwnd):
+        """The icon's screen rectangle, or None when the shell can't say (e.g. it's hidden in the overflow)."""
+        ident, rect = NotifyIconIdentifier(), w.RECT()
+        ident.cbSize, ident.hWnd, ident.uID = c.sizeof(ident), hwnd, 1
+        if self.shell.Shell_NotifyIconGetRect(c.byref(ident), c.byref(rect)) != 0:
+            return None
+        return rect.left, rect.top, rect.right, rect.bottom
 
     def _add_icon(self):
         self.available = bool(self.shell.Shell_NotifyIconW(0, c.byref(self.icon)))
@@ -137,6 +151,10 @@ class WindowsTray:
                     self.events.put("show")
                 elif event == 0x007B:  # WM_CONTEXTMENU (mouse or keyboard)
                     self._menu(hwnd)
+                elif event == 0x0406:  # NIN_POPUPOPEN: pointer is resting on the icon
+                    rect = self._icon_rect(hwnd)  # the widget then tracks the pointer itself
+                    if rect:
+                        self.events.put(("peek", rect))
                 return 0
             if message == self.taskbar_created:
                 self._add_icon()  # Explorer restarted
@@ -170,12 +188,14 @@ class WindowsTray:
                 raise c.WinError(c.get_last_error())
             self.icon = NotifyIconData()
             self.icon.cbSize, self.icon.hWnd, self.icon.uID = c.sizeof(self.icon), self.hwnd, 1
-            self.icon.uFlags = 1 | 2 | 4 | 0x80  # message, icon, tooltip, show tooltip
+            # message, icon, tooltip; leaving out NIF_SHOWTIP makes the shell send NIN_POPUPOPEN/CLOSE
+            # on hover instead of drawing the plain tooltip, so the widget itself can pop up.
+            self.icon.uFlags = 1 | 2 | 4
             self.icon.uCallbackMessage = self.CALLBACK
             self.icon.hIcon = self.user.LoadIconW(None, c.c_void_p(32512))  # shared application icon
             if not self.icon.hIcon:
                 raise c.WinError(c.get_last_error())
-            self.icon.szTip = "AI Usage Tracker - click to show; right-click for menu"
+            self.icon.szTip = "AI Usage Tracker - hover to peek, click to show, right-click for menu"
             self._add_icon()
             if self.stopping.is_set():
                 return

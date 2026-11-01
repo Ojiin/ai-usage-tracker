@@ -54,7 +54,9 @@ It writes `dashboard.html` next to itself, and reads `pricing.json` from there i
 Click **−** or right-click **Hide to tray (keep tracking)** to remove the window from the screen
 and taskbar. Tracking and dashboard updates continue every 5 minutes while hidden.
 Click the **AI Usage Tracker** icon in the notification area by the clock (possibly under **^**)
-to show it again. Its right-click menu also offers Show tracker, Refresh now, Open dashboard, and Exit.
+to show it again. **Rest the pointer on that icon** to peek: the whole widget pops up above it
+and hides again when the pointer moves away (move up into it to keep it open, e.g. to hover "● N working").
+Drag the icon out of **^** onto the taskbar so it's one hover away. Its right-click menu also offers Show tracker, Refresh now, Open dashboard, and Exit.
 The **✕** button and **Exit** quit the app completely. If Windows cannot create the tray icon,
 the widget stays visible so you can still reach it.
 Its window position is saved in `%LOCALAPPDATA%\AIUsageTracker\widget.json`.

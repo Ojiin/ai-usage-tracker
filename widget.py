@@ -23,6 +23,7 @@ from tray import WindowsTray
 REFRESH_MS = 5 * 60 * 1000
 COUNTDOWN_MS = 30 * 1000  # reset countdowns tick between scans
 HOVER_POLL_MS = 150  # how often an open hover card checks the pointer is still on its label
+PEEK_GAP = 8  # pixels between the tray icon and the widget when it peeks from the tray
 SETTINGS = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "AIUsageTracker" / "widget.json"
 DASHBOARD = tracker.HERE / "dashboard.html"
 
@@ -217,7 +218,9 @@ class Widget:
                 action = self.tray_events.get_nowait()
             except queue.Empty:
                 break
-            if isinstance(action, tuple):
+            if isinstance(action, tuple) and action[0] == "peek":
+                self.peek(action[1])
+            elif isinstance(action, tuple):
                 self.restore()
                 self.status.configure(text=action[1])
             elif action == "quit":
@@ -527,12 +530,57 @@ class Widget:
 
     # --- actions ----------------------------------------------------------
     def hide_to_tray(self):
+        self._end_peek()
         if self.tray.available:
             self.root.withdraw()
         else:
             self.status.configure(text="Tray icon unavailable — please try again")
 
+    def peek(self, icon):
+        """Show the hidden widget just above (or below) the tray icon while the pointer rests on it."""
+        if self.root.state() != "withdrawn" and not getattr(self, "peeking", None):
+            return  # already up the normal way
+        self.root.update_idletasks()
+        width, height = self.root.winfo_reqwidth(), self.root.winfo_reqheight()
+        left, top, right, bottom = virtual_screen() or (0, 0, self.root.winfo_screenwidth(), self.root.winfo_screenheight())
+        x = min(max((icon[0] + icon[2] - width) // 2, left), right - width)
+        y = icon[1] - height - PEEK_GAP
+        if y < top:  # taskbar along the top of the screen
+            y = icon[3] + PEEK_GAP
+        self.root.geometry(f"+{x}+{y}")
+        self.root.attributes("-topmost", True)
+        first = not getattr(self, "peeking", None)
+        self.peeking = icon
+        self.root.deiconify()
+        self.root.lift()
+        if first:
+            self.root.after(HOVER_POLL_MS, self._track_peek)
+
+    def _track_peek(self):
+        # Stays up while the pointer is on the icon, on the widget, or crossing the gap between them,
+        # so you can move up into it (e.g. to hover "● N working"); hides once it is anywhere else.
+        icon = getattr(self, "peeking", None)
+        if not icon:
+            return
+        px, py = self.root.winfo_pointerxy()
+        x, y = self.root.winfo_rootx(), self.root.winfo_rooty()
+        box = (min(icon[0], x), min(icon[1], y), max(icon[2], x + self.root.winfo_width()),
+               max(icon[3], y + self.root.winfo_height()))
+        over_card = getattr(self, "tip", None) is not None and self.root.winfo_containing(px, py) is not None
+        if box[0] <= px < box[2] and box[1] <= py < box[3] or over_card:
+            self.root.after(HOVER_POLL_MS, self._track_peek)
+        else:
+            self._end_peek()
+            self._hide_working()
+            self.root.withdraw()
+
+    def _end_peek(self):
+        if getattr(self, "peeking", None):
+            self.peeking = None
+            self.root.attributes("-topmost", self.topmost.get())
+
     def restore(self):
+        self._end_peek()
         self.root.geometry("+{}+{}".format(*self._start_position()))
         self.root.deiconify()
         self.root.lift()
