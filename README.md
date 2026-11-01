@@ -1,7 +1,34 @@
 # AI Usage Tracker
 
 Reads the logs Claude Code and Codex keep on this PC and builds `dashboard.html`:
-tokens per day, per model and per project, the token mix, and your Codex plan limits (5-hour and weekly %).
+tokens per day, per model and per project, the token mix, and your Claude Code and Codex plan limits.
+
+An unofficial, independent tool for Windows. It isn't made or endorsed by Anthropic or OpenAI.
+
+## What it reads, and what it sends
+
+Please read this before using it:
+
+- **Local logs:** it reads the session logs and prompt history that Claude Code (`~/.claude`) and Codex
+  (`~/.codex`) keep on your PC. Only slash-command names are taken from prompt history, never your prompts. The
+  hover card shows your latest prompt and session titles on your own screen only.
+- **Your logins:** to show live plan limits, it reads the login each app saved
+  (`~/.claude/.credentials.json`, `~/.codex/auth.json`) and uses it to ask each service for your current usage.
+  It never renews, changes or copies these logins, and never writes them to any file.
+- **Undocumented endpoints:** those plan-limit checks call usage addresses that Claude Code and Codex use
+  internally (listed under [Plan limits](#plan-limits-live)). They aren't public APIs, may change or stop
+  working at any time, and using them may not be permitted by each service's terms. The Claude check sends a
+  `claude-cli` User-Agent, as Claude Code does. If you'd rather not make these calls, don't use the widget or
+  dashboard, or remove `claude_live` and `codex_live` from `tracker.py`.
+- **Codex account analytics:** it starts the installed Codex app-server briefly to read OpenAI's documented
+  account usage report.
+- **Admin keys (optional):** if you set `ANTHROPIC_ADMIN_KEY` or `OPENAI_ADMIN_KEY`, they're sent only to their
+  own provider's official usage and cost reports.
+- **Nothing else leaves your PC.** There's no telemetry. Everything the tracker saves stays in
+  `%LOCALAPPDATA%\AIUsageTracker\` and in `dashboard.html` next to the app. The dashboard holds your usage
+  details, so don't share or commit it.
+
+Dollar figures labelled "API-equivalent" are estimates from `pricing.json`, not what you were billed.
 
 ## Widget (AIUsageTracker.exe)
 
@@ -154,7 +181,12 @@ Fill in USD-per-million-token rates in `pricing.json` to add a cost column.
 
 ## Validation
 
-Run `python -m unittest -v test_tracker test_api_billing test_widget test_limits_watch test_activity` for accounting, limit-parser, pace/alert, activity,
-API billing, and background/tray lifecycle regressions.
+Run `python -m unittest -v test_tracker test_api_billing test_widget test_limits_watch test_activity test_openai_analytics test_startup`
+for accounting, limit-parser, pace/alert, activity, account analytics, start-with-Windows, API billing, and
+background/tray lifecycle regressions. The tests use temporary folders and a throwaway registry key, never your own logs.
 
 Official references: [Codex App Server](https://learn.chatgpt.com/docs/app-server) documents separate metered limit buckets, credit details, and window durations. [Pricing](https://learn.chatgpt.com/docs/pricing) explains tokens versus credits and why subscription consumption is not a fixed token allowance. The direct usage endpoint and local log formats remain implementation details that may change.
+
+## License
+
+[MIT](LICENSE)
