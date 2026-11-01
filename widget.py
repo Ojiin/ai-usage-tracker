@@ -22,6 +22,7 @@ from tray import WindowsTray
 
 REFRESH_MS = 5 * 60 * 1000
 COUNTDOWN_MS = 30 * 1000  # reset countdowns tick between scans
+HOVER_POLL_MS = 150  # how often an open hover card checks the pointer is still on its label
 SETTINGS = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "AIUsageTracker" / "widget.json"
 DASHBOARD = tracker.HERE / "dashboard.html"
 
@@ -102,7 +103,6 @@ class Widget:
         self.working = tk.Label(head, text="", bg=CARD, fg="#12b76a", font=(FONT, 8))
         self.working.pack(side="left", padx=(8, 0))
         self.working.bind("<Enter>", self._show_working)
-        self.working.bind("<Leave>", self._hide_working)
         for symbol, tip, cmd in (("✕", "Close", self.quit), ("−", "Hide to tray", self.hide_to_tray), ("↗", "Open dashboard", self.open_dashboard), ("⟳", "Refresh", self.refresh)):
             b = tk.Label(head, text=symbol, bg=CARD, fg=MUTED, font=(FONT, 11), cursor="hand2", padx=4)
             b.pack(side="right")
@@ -467,7 +467,8 @@ class Widget:
 
     def _show_working(self, _event=None):
         """Hover card: each working session's model, effort, project, title, last prompt and subagents."""
-        self._hide_working()
+        if getattr(self, "tip", None) is not None:
+            return  # already open; opening it can re-send <Enter> to the label
         try:
             sessions = tracker.working_details()
         except OSError:
@@ -495,6 +496,18 @@ class Widget:
         if y + tip.winfo_height() > bottom:  # no room below: open above the label
             y = self.working.winfo_rooty() - tip.winfo_height() - 4
         tip.geometry(f"+{max(x, left)}+{max(y, top)}")
+        self.root.after(HOVER_POLL_MS, self._track_hover)
+
+    def _track_hover(self):
+        # Windows sends the label a <Leave> as soon as the card window appears, even with the pointer
+        # still on it, so the card closes only once the pointer is really somewhere else.
+        if getattr(self, "tip", None) is None:
+            return
+        x, y = self.root.winfo_pointerxy()
+        if self.root.winfo_containing(x, y) is self.working:
+            self.root.after(HOVER_POLL_MS, self._track_hover)
+        else:
+            self._hide_working()
 
     def _hide_working(self, _event=None):
         if getattr(self, "tip", None) is not None:
