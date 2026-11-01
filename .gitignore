@@ -1,0 +1,18 @@
+# Your own usage report: project names, plans, token counts, costs
+dashboard.html
+
+# Build output and the packaged exe (publish the exe as a GitHub Release asset instead)
+build/
+dist/
+*.exe
+*.spec
+
+# Local Python environment and caches
+.venv/
+.build-wheels/
+__pycache__/
+*.pyc
+
+# Logs and local-only files
+*.log
+.local/
