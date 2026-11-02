@@ -6,6 +6,7 @@ import argparse
 import openai_analytics
 import re
 import contextlib
+import sqlite3
 import io
 import json
 import os
@@ -147,6 +148,71 @@ def codex_titles():
     return titles
 
 
+CODEX_STALE_TURN = 30 * 60  # an inProgress turn this long without activity is a crashed run, not work
+
+
+def codex_db(prefix):
+    """Codex's newest versioned database, e.g. state_5.sqlite, opened read-only; None if there isn't one."""
+    def version(path):
+        tail = path.stem[len(prefix) + 1:]
+        return int(tail) if tail.isdigit() else -1
+    paths = sorted(CODEX_DIR.parent.glob(f"{prefix}_*.sqlite"), key=version)
+    if not paths:
+        return None
+    try:
+        return sqlite3.connect(f"{paths[-1].as_uri()}?mode=ro", uri=True, timeout=1)
+    except sqlite3.Error:
+        return None
+
+
+def codex_db_working(now):
+    """Codex threads with a turn in progress, from Codex's own databases.
+
+    Newer Codex keeps a thread's turns in thread_history_N.sqlite instead of appending to its
+    rollout log while it works, so the log's age says nothing about it. Returns (sessions, ids of
+    every thread those databases track) so the rollout-log check can skip the threads covered here.
+    """
+    state, history = codex_db("state"), codex_db("thread_history")
+    if not state or not history:
+        for db in (state, history):
+            if db:
+                db.close()
+        return [], set()
+    try:
+        with contextlib.closing(state), contextlib.closing(history):
+            covered = {r[0] for r in state.execute("SELECT id FROM threads WHERE history_mode != 'legacy'")}
+            running = [r[0] for r in history.execute("SELECT DISTINCT thread_id FROM thread_turns WHERE status = 'inProgress'")]
+            parents = dict(state.execute("SELECT child_thread_id, parent_thread_id FROM thread_spawn_edges"))
+            sessions = []
+            for tid in running:
+                row = state.execute("SELECT model, reasoning_effort, cwd, name, title, thread_source, agent_nickname, "
+                                    "attached_thread_parent_id, updated_at_ms FROM threads WHERE id = ?", (tid,)).fetchone()
+                if not row:
+                    continue
+                model, effort, cwd, name, title, source, nickname, attached, updated = row
+                last_item = history.execute("SELECT MAX(created_at_ms) FROM thread_items WHERE thread_id = ?", (tid,)).fetchone()[0]
+                age = int(now - max(updated or 0, last_item or 0) / 1000)
+                if age > CODEX_STALE_TURN:
+                    continue
+                task = None
+                prompt = history.execute("SELECT item_json FROM thread_items WHERE thread_id = ? AND item_type = 'userMessage' "
+                                         "ORDER BY rollout_ordinal DESC LIMIT 1", (tid,)).fetchone()
+                if prompt:
+                    try:
+                        content = json.loads(prompt[0]).get("content") or []
+                    except ValueError:
+                        content = []
+                    text = " ".join(c.get("text", "") for c in content if isinstance(c, dict))
+                    task = short_text(text) if text.strip() else None
+                sessions.append({"tool": "Codex", "model": model, "effort": effort, "id": tid,
+                                 "project": PureWindowsPath(cwd).name if cwd else None,
+                                 "title": name or title or None, "task": task, "age": max(age, 0),
+                                 "parent": parents.get(tid) or attached, "nickname": nickname, "source": source})
+            return sessions, covered
+    except sqlite3.Error:  # mid-migration or locked: fall back to the rollout logs alone
+        return [], set()
+
+
 def claude_session_info(path):
     info = {"tool": "Claude Code", "model": None, "effort": None, "project": None, "title": None, "task": None}
     for row in tail_rows(path):
@@ -198,11 +264,13 @@ def codex_session_info(path, titles):
 def working_details(window=120, now=None):
     """What each working session is doing: model, effort, project, title, latest prompt, and its subagents.
 
-    Reads the end of each recently written log only; nothing is sent anywhere.
+    Reads the end of each recently written log, and for newer Codex its local databases (read-only);
+    nothing is sent anywhere.
     """
     now = now or datetime.now().timestamp()
     sessions, subagents = {}, {}
     titles = None
+    codex_running, codex_covered = codex_db_working(now) if CODEX_DIR.parent.exists() else ([], set())
     for tool, root in (("Claude Code", CLAUDE_DIR), ("Codex", CODEX_DIR)):
         if not root.exists():
             continue
@@ -227,19 +295,23 @@ def working_details(window=120, now=None):
                     sessions[parent] = dict(claude_session_info(Path(parent)), age=age)
                 sessions[parent]["age"] = min(sessions[parent]["age"], age)
             elif tool == "Codex":
+                if path.stem[-36:] in codex_covered:  # its database says whether it's running (below)
+                    continue
                 titles = codex_titles() if titles is None else titles
-                info = codex_session_info(path, titles)
-                if info["parent"]:
-                    kind = "review agent" if info["source"] == "guardian_review" else "subagent"
-                    subagents.setdefault("codex:" + info["parent"], []).append({
-                        "type": f'{info["nickname"]} ({kind})' if info["nickname"] else kind,
-                        "description": info["task"], "model": info["model"], "effort": info["effort"], "age": age,
-                        "project": info["project"]})
-                else:
-                    sessions["codex:" + (info["id"] or str(path))] = dict(info, age=age)
+                codex_running.append(dict(codex_session_info(path, titles), age=age))
             else:
                 sessions.setdefault(str(path), dict(claude_session_info(path), age=age))
                 sessions[str(path)]["age"] = min(sessions[str(path)]["age"], age)
+    for info in codex_running:
+        age = info["age"]
+        if info["parent"]:
+            kind = "review agent" if info["source"] == "guardian_review" else "subagent"
+            subagents.setdefault("codex:" + info["parent"], []).append({
+                "type": f'{info["nickname"]} ({kind})' if info["nickname"] else kind,
+                "description": info["task"], "model": info["model"], "effort": info["effort"], "age": age,
+                "project": info["project"]})
+        else:
+            sessions["codex:" + (info["id"] or str(id(info)))] = info
     for key, subs in subagents.items():
         if key not in sessions:  # a Codex subagent whose parent thread is quiet
             sessions[key] = {"tool": "Codex", "model": None, "effort": None, "project": subs[0].get("project"),

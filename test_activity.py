@@ -1,6 +1,8 @@
 """Activity regressions: tool calls, agents, MCP servers, slash commands, hours, working-now.
 Uses temp folders only; never the user's logs."""
+import contextlib
 import json
+import sqlite3
 import os
 import tempfile
 import time
@@ -170,6 +172,41 @@ class ActivityTests(unittest.TestCase):
         self.assertEqual(tracker.pretty_model('claude-opus-5-5'), 'Opus 5.5')
         self.assertEqual(tracker.pretty_model('claude-sonnet-5'), 'Sonnet 5')
         self.assertEqual(tracker.pretty_model('gpt-6.1-sol'), 'gpt-6.1-sol')
+
+    def test_codex_database_threads_count_only_while_a_turn_is_in_progress(self):
+        # Newer Codex writes turns to thread_history_N.sqlite, not its rollout log, while it works.
+        now = time.time()
+        done = '01a19c84-0000-7000-8000-000000000001'  # rollout logs end in the thread's 36-character id
+        home = self.codex.parent
+        home.mkdir(parents=True, exist_ok=True)
+        with contextlib.closing(sqlite3.connect(home / 'state_5.sqlite')) as db:
+            db.execute('CREATE TABLE threads (id TEXT, history_mode TEXT, model TEXT, reasoning_effort TEXT, cwd TEXT, name TEXT, '
+                       'title TEXT, thread_source TEXT, agent_nickname TEXT, attached_thread_parent_id TEXT, updated_at_ms INTEGER)')
+            db.execute('CREATE TABLE thread_spawn_edges (parent_thread_id TEXT, child_thread_id TEXT, status TEXT)')
+            db.executemany('INSERT INTO threads VALUES (?,?,?,?,?,?,?,?,?,?,?)', [
+                ('t-main', 'paginated', 'gpt-6-astra', 'ultra', 'C:\\work\\photo', None, 'Review Photul', 'user', None, None, now * 1000),
+                ('t-kid', 'paginated', 'gpt-6-astra', 'high', 'C:\\work\\photo', None, '', 'subagent', 'Faraday', None, now * 1000),
+                (done, 'paginated', 'gpt-6-astra', 'medium', 'C:\\work\\x', None, 'Finished', 'user', None, None, now * 1000),
+                ('t-crashed', 'paginated', 'gpt-6-astra', 'medium', 'C:\\work\\x', None, 'Old', 'user', None, None, (now - 7200) * 1000)])
+            db.execute("INSERT INTO thread_spawn_edges VALUES ('t-main', 't-kid', 'open')")
+            db.commit()
+        with contextlib.closing(sqlite3.connect(home / 'thread_history_1.sqlite')) as db:
+            db.execute('CREATE TABLE thread_turns (thread_id TEXT, status TEXT)')
+            db.execute('CREATE TABLE thread_items (thread_id TEXT, item_type TEXT, item_json TEXT, rollout_ordinal INTEGER, created_at_ms INTEGER)')
+            db.executemany('INSERT INTO thread_turns VALUES (?,?)', [
+                ('t-main', 'completed'), ('t-main', 'inProgress'), ('t-kid', 'inProgress'), (done, 'completed'), ('t-crashed', 'inProgress')])
+            prompt = lambda text: json.dumps({'type': 'userMessage', 'content': [{'type': 'text', 'text': text}]})
+            db.executemany('INSERT INTO thread_items VALUES (?,?,?,?,?)', [
+                ('t-main', 'userMessage', prompt('first ask'), 1, now * 1000), ('t-main', 'userMessage', prompt('find the bugs'), 5, now * 1000),
+                ('t-kid', 'userMessage', prompt('check the exporter'), 1, now * 1000)])
+            db.commit()
+        write(self.codex / '2026' / f'rollout-2026-11-02T08-00-00-{done}.jsonl', [{}])  # rewritten just now, yet idle
+        self.assertEqual(tracker.working_now(), {'Claude Code': 0, 'Codex': 1})
+        lines = tracker.describe_session(tracker.working_details()[0]).split('\n')
+        self.assertEqual(lines[0], 'gpt-6-astra ultra working on photo')
+        self.assertIn('  “Review Photul”', lines)
+        self.assertIn('  Last prompt: find the bugs', lines)
+        self.assertIn('  ↳ Faraday (subagent) · gpt-6-astra high: check the exporter', lines)
 
     def test_working_now_counts_recent_sessions_and_subagents_as_parent(self):
         fresh, old = time.time(), time.time() - 600

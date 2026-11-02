@@ -10,7 +10,8 @@ An unofficial, independent tool for Windows. It isn't made or endorsed by Anthro
 Please read this before using it:
 
 - **Local logs:** it reads the session logs and prompt history that Claude Code (`~/.claude`) and Codex
-  (`~/.codex`) keep on your PC. Only slash-command names are taken from prompt history, never your prompts. The
+  (`~/.codex`) keep on your PC, and Codex's thread databases (`state_N.sqlite`, `thread_history_N.sqlite`),
+  opened read-only. Only slash-command names are taken from prompt history, never your prompts. The
   hover card shows your latest prompt and session titles on your own screen only.
 - **Your logins:** to show live plan limits, it reads the login each app saved
   (`~/.claude/.credentials.json`, `~/.codex/auth.json`) and uses it to ask each service for your current usage.
@@ -39,7 +40,9 @@ and your Claude Code and Codex plan limits. It's a single file with no install, 
 - **⟳** rescans now (it also rescans every 5 minutes), **↗** opens the full dashboard, **✕** closes it.
 - **Right-click** for the same actions plus "Always on top" and "Limit alerts" toggles.
 - A green **● N working** next to the title counts Claude Code and Codex sessions whose log changed in the
-  last 2 minutes (a subagent counts as its parent session). It's checked every 30 seconds.
+  last 2 minutes (a subagent counts as its parent session). Newer Codex versions keep a running turn in
+  `~/.codex/thread_history_N.sqlite` instead of writing its log, so for those threads it counts any turn
+  still marked in progress there. It's checked every 30 seconds.
   **Hover over it** for a card listing each working session, e.g. "Opus 5.5 med working on scripts", with:
   - the session title;
   - your last prompt (shortened);
