@@ -190,24 +190,6 @@
       "uses_instanceof": false
     },
     {
-      "name": "codex_db",
-      "file": "tracker.py",
-      "line": 154,
-      "params": [
-        {
-          "name": "prefix",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        }
-      ],
-      "returns": "unknown",
-      "is_async": false,
-      "is_generator": false,
-      "type_params": [],
-      "uses_instanceof": false
-    },
-    {
       "name": "codex_db_working",
       "file": "tracker.py",
       "line": 168,
@@ -232,30 +214,6 @@
       "params": [
         {
           "name": "path",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        }
-      ],
-      "returns": "unknown",
-      "is_async": false,
-      "is_generator": false,
-      "type_params": [],
-      "uses_instanceof": false
-    },
-    {
-      "name": "codex_session_info",
-      "file": "tracker.py",
-      "line": 234,
-      "params": [
-        {
-          "name": "path",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        },
-        {
-          "name": "titles",
           "ts_type": "unknown",
           "optional": false,
           "rest": false
@@ -350,17 +308,6 @@
       "uses_instanceof": false
     },
     {
-      "name": "utc_now_iso",
-      "file": "tracker.py",
-      "line": 521,
-      "params": [],
-      "returns": "unknown",
-      "is_async": false,
-      "is_generator": false,
-      "type_params": [],
-      "uses_instanceof": false
-    },
-    {
       "name": "to_epoch",
       "file": "tracker.py",
       "line": 525,
@@ -404,36 +351,6 @@
         {
           "name": "minutes",
           "ts_type": "number",
-          "optional": false,
-          "rest": false
-        }
-      ],
-      "returns": "unknown",
-      "is_async": false,
-      "is_generator": false,
-      "type_params": [],
-      "uses_instanceof": false
-    },
-    {
-      "name": "get_json",
-      "file": "tracker.py",
-      "line": 544,
-      "params": [
-        {
-          "name": "url",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        },
-        {
-          "name": "headers",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        },
-        {
-          "name": "app",
-          "ts_type": "unknown",
           "optional": false,
           "rest": false
         }
@@ -567,57 +484,39 @@
       "is_generator": false,
       "type_params": [],
       "uses_instanceof": false
-    },
-    {
-      "name": "write_dashboard",
-      "file": "tracker.py",
-      "line": 795,
-      "params": [
-        {
-          "name": "data",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        },
-        {
-          "name": "out_path",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        }
-      ],
-      "returns": "unknown",
-      "is_async": false,
-      "is_generator": false,
-      "type_params": [],
-      "uses_instanceof": false
-    },
-    {
-      "name": "build",
-      "file": "tracker.py",
-      "line": 800,
-      "params": [
-        {
-          "name": "out_path",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        }
-      ],
-      "returns": "unknown",
-      "is_async": false,
-      "is_generator": false,
-      "type_params": [],
-      "uses_instanceof": false
     }
   ],
   "classes": [],
   "js_only": [
     {
+      "name": "codex_db",
+      "file": "tracker.py",
+      "line": 154,
+      "reason": "returns an open database connection"
+    },
+    {
+      "name": "codex_session_info",
+      "file": "tracker.py",
+      "line": 234,
+      "reason": "takes a pathlib.Path, which the bridge cannot pass"
+    },
+    {
       "name": "iter_jsonl",
       "file": "tracker.py",
       "line": 345,
       "reason": "generator: returns a lazy iterator"
+    },
+    {
+      "name": "utc_now_iso",
+      "file": "tracker.py",
+      "line": 521,
+      "reason": "returns the current time"
+    },
+    {
+      "name": "get_json",
+      "file": "tracker.py",
+      "line": 544,
+      "reason": "makes an HTTPS request"
     },
     {
       "name": "plan_limits",
@@ -630,6 +529,18 @@
       "file": "tracker.py",
       "line": 771,
       "reason": "calls its parameter `log`: a callable"
+    },
+    {
+      "name": "write_dashboard",
+      "file": "tracker.py",
+      "line": 795,
+      "reason": "writes through a pathlib.Path argument, which the bridge cannot pass"
+    },
+    {
+      "name": "build",
+      "file": "tracker.py",
+      "line": 800,
+      "reason": "runs collect, which needs the api_billing and openai_analytics ports; ported natively as native::collect + native::write_dashboard"
     },
     {
       "name": "main",

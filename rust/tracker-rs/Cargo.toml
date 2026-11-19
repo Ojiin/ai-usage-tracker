@@ -11,6 +11,12 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 pyo3 = { version = "0.30", features = ["extension-module", "abi3-py39"] }
 serde = "1"
+pycompat = { path = "../pycompat" }
+limits-watch-rs = { path = "../limits-watch-rs" }
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+rusqlite = { version = "0.37", features = ["bundled"] }
+zstd = "0.13"
+ureq = { version = "3", default-features = false, features = ["rustls"] }
 serde_json = { version = "1", features = ["preserve_order", "float_roundtrip", "unbounded_depth"] }
 
 [profile.release]

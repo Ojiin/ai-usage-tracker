@@ -1,0 +1,1106 @@
+{
+ "day": [
+  {
+   "input": 682000,
+   "cache_write": 447200,
+   "cache_read": 12307500,
+   "output": 400925,
+   "reasoning": 50800,
+   "total": 13837625,
+   "cost": 12.3152,
+   "priced": false,
+   "calls": 88,
+   "key": "2026-11-17",
+   "session_count": 2
+  },
+  {
+   "input": 619440,
+   "cache_write": 410800,
+   "cache_read": 11064900,
+   "output": 365615,
+   "reasoning": 47200,
+   "total": 12460755,
+   "cost": 13.21264,
+   "priced": true,
+   "calls": 81,
+   "key": "2026-11-15",
+   "session_count": 2
+  },
+  {
+   "input": 236400,
+   "cache_write": 156000,
+   "cache_read": 3601500,
+   "output": 139025,
+   "reasoning": 22000,
+   "total": 4132925,
+   "cost": 1.8792,
+   "priced": false,
+   "calls": 32,
+   "key": "2026-11-01",
+   "session_count": 2
+  },
+  {
+   "input": 388800,
+   "cache_write": 265200,
+   "cache_read": 6535500,
+   "output": 231725,
+   "reasoning": 32800,
+   "total": 7421225,
+   "cost": 4.809200000000001,
+   "priced": true,
+   "calls": 53,
+   "key": "2026-11-07",
+   "session_count": 2
+  },
+  {
+   "input": 285240,
+   "cache_write": 192400,
+   "cache_read": 4535400,
+   "output": 169190,
+   "reasoning": 25600,
+   "total": 5182230,
+   "cost": 5.84464,
+   "priced": true,
+   "calls": 39,
+   "key": "2026-11-03",
+   "session_count": 2
+  },
+  {
+   "input": 511440,
+   "cache_write": 249600,
+   "cache_read": 6176400,
+   "output": 271340,
+   "reasoning": 52000,
+   "total": 7208780,
+   "cost": 7.7316275,
+   "priced": true,
+   "calls": 50,
+   "key": "2026-11-19",
+   "session_count": 2
+  },
+  {
+   "input": 443520,
+   "cache_write": 301600,
+   "cache_read": 7601700,
+   "output": 264095,
+   "reasoning": 36400,
+   "total": 8610915,
+   "cost": 7.78592,
+   "priced": false,
+   "calls": 60,
+   "key": "2026-11-09",
+   "session_count": 2
+  },
+  {
+   "input": 336040,
+   "cache_write": 228800,
+   "cache_read": 5513400,
+   "output": 200090,
+   "reasoning": 29200,
+   "total": 6278330,
+   "cost": 5.70944,
+   "priced": false,
+   "calls": 46,
+   "key": "2026-11-05",
+   "session_count": 2
+  },
+  {
+   "input": 558840,
+   "cache_write": 374400,
+   "cache_read": 9866400,
+   "output": 331040,
+   "reasoning": 43600,
+   "total": 11130680,
+   "cost": 4.99392,
+   "priced": false,
+   "calls": 74,
+   "key": "2026-11-13",
+   "session_count": 2
+  },
+  {
+   "input": 500200,
+   "cache_write": 338000,
+   "cache_read": 8712000,
+   "output": 297200,
+   "reasoning": 40000,
+   "total": 9847400,
+   "cost": 10.6312,
+   "priced": true,
+   "calls": 67,
+   "key": "2026-11-11",
+   "session_count": 2
+  }
+ ],
+ "model": [
+  {
+   "input": 1257480,
+   "cache_write": 2137200,
+   "cache_read": 51103800,
+   "output": 1180530,
+   "reasoning": 0,
+   "total": 55679010,
+   "cost": 55.95887999999999,
+   "priced": true,
+   "calls": 411,
+   "key": "claude-opus-5-5|Claude Code",
+   "session_count": 7
+  },
+  {
+   "input": 446040,
+   "cache_write": 795600,
+   "cache_read": 18527400,
+   "output": 431190,
+   "reasoning": 0,
+   "total": 20200230,
+   "cost": 10.239119999999998,
+   "priced": true,
+   "calls": 153,
+   "key": "claude-sonnet-5-5|Claude Code",
+   "session_count": 3
+  },
+  {
+   "input": 11400,
+   "cache_write": 31200,
+   "cache_read": 589500,
+   "output": 14625,
+   "reasoning": 0,
+   "total": 646725,
+   "cost": 0.0205875,
+   "priced": true,
+   "calls": 6,
+   "key": "claude-haiku-5-5|Claude Code",
+   "session_count": 1
+  },
+  {
+   "input": 1365000,
+   "cache_write": 0,
+   "cache_read": 2730000,
+   "output": 500500,
+   "reasoning": 182000,
+   "total": 4595500,
+   "cost": 0.0,
+   "priced": false,
+   "calls": 10,
+   "key": "gpt-5.3-codex-spark|Codex",
+   "session_count": 5
+  },
+  {
+   "input": 1482000,
+   "cache_write": 0,
+   "cache_read": 2964000,
+   "output": 543400,
+   "reasoning": 197600,
+   "total": 4989400,
+   "cost": 8.6944,
+   "priced": true,
+   "calls": 10,
+   "key": "gpt-6.1-sol|Codex",
+   "session_count": 5
+  }
+ ],
+ "project": [
+  {
+   "input": 1714920,
+   "cache_write": 2964000,
+   "cache_read": 70220700,
+   "output": 1626345,
+   "reasoning": 0,
+   "total": 76525965,
+   "cost": 66.21858750000001,
+   "priced": true,
+   "calls": 570,
+   "key": "C:\\work\\usage-tracker|Claude Code",
+   "session_count": 10
+  },
+  {
+   "input": 2847000,
+   "cache_write": 0,
+   "cache_read": 5694000,
+   "output": 1043900,
+   "reasoning": 379600,
+   "total": 9584900,
+   "cost": 8.6944,
+   "priced": false,
+   "calls": 20,
+   "key": "photo|Codex",
+   "session_count": 10
+  }
+ ],
+ "tool": [
+  {
+   "input": 1714920,
+   "cache_write": 2964000,
+   "cache_read": 70220700,
+   "output": 1626345,
+   "reasoning": 0,
+   "total": 76525965,
+   "cost": 66.21858750000001,
+   "priced": true,
+   "calls": 570,
+   "key": "Claude Code",
+   "session_count": 10
+  },
+  {
+   "input": 2847000,
+   "cache_write": 0,
+   "cache_read": 5694000,
+   "output": 1043900,
+   "reasoning": 379600,
+   "total": 9584900,
+   "cost": 8.6944,
+   "priced": false,
+   "calls": 20,
+   "key": "Codex",
+   "session_count": 10
+  }
+ ],
+ "daily_tool": {
+  "2026-11-01": {
+   "Claude Code": 3577425,
+   "Codex": 555500
+  },
+  "2026-11-03": {
+   "Claude Code": 4535830,
+   "Codex": 646400
+  },
+  "2026-11-05": {
+   "Claude Code": 5541030,
+   "Codex": 737300
+  },
+  "2026-11-07": {
+   "Claude Code": 6593025,
+   "Codex": 828200
+  },
+  "2026-11-09": {
+   "Claude Code": 7691815,
+   "Codex": 919100
+  },
+  "2026-11-11": {
+   "Claude Code": 8837400,
+   "Codex": 1010000
+  },
+  "2026-11-13": {
+   "Claude Code": 10029780,
+   "Codex": 1100900
+  },
+  "2026-11-15": {
+   "Claude Code": 11268955,
+   "Codex": 1191800
+  },
+  "2026-11-17": {
+   "Claude Code": 12554925,
+   "Codex": 1282700
+  },
+  "2026-11-19": {
+   "Claude Code": 5895780,
+   "Codex": 1313000
+  }
+ },
+ "daily_tool_cost": {
+  "2026-11-01": {
+   "Claude Code": 1.8792
+  },
+  "2026-11-03": {
+   "Claude Code": 4.7182,
+   "Codex": 1.1264
+  },
+  "2026-11-05": {
+   "Claude Code": 5.7094
+  },
+  "2026-11-07": {
+   "Claude Code": 3.366,
+   "Codex": 1.4432
+  },
+  "2026-11-09": {
+   "Claude Code": 7.7859
+  },
+  "2026-11-11": {
+   "Claude Code": 8.8712,
+   "Codex": 1.76
+  },
+  "2026-11-13": {
+   "Claude Code": 4.9939
+  },
+  "2026-11-15": {
+   "Claude Code": 11.1358,
+   "Codex": 2.0768
+  },
+  "2026-11-17": {
+   "Claude Code": 12.3152
+  },
+  "2026-11-19": {
+   "Claude Code": 5.4436,
+   "Codex": 2.288
+  }
+ },
+ "daily_tool_unpriced": {
+  "2026-11-01": [
+   "Codex"
+  ],
+  "2026-11-05": [
+   "Codex"
+  ],
+  "2026-11-09": [
+   "Codex"
+  ],
+  "2026-11-13": [
+   "Codex"
+  ],
+  "2026-11-17": [
+   "Codex"
+  ]
+ },
+ "day_hours": {
+  "2026-11-01": {
+   "Claude Code": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    2289450,
+    1287975,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "Codex": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    202000,
+    0,
+    353500,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  "2026-11-03": {
+   "Claude Code": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    2289450,
+    2246380,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "Codex": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    252500,
+    0,
+    393900,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  "2026-11-05": {
+   "Claude Code": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    2289450,
+    2671450,
+    580130,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "Codex": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    303000,
+    0,
+    434300,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  "2026-11-07": {
+   "Claude Code": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    2289450,
+    2671450,
+    1632125,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "Codex": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    353500,
+    0,
+    474700,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  "2026-11-09": {
+   "Claude Code": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    2289450,
+    2671450,
+    2730915,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "Codex": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    404000,
+    0,
+    515100,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  "2026-11-11": {
+   "Claude Code": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    2289450,
+    2671450,
+    3053450,
+    823050,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "Codex": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    454500,
+    0,
+    555500,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  "2026-11-13": {
+   "Claude Code": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    2289450,
+    2671450,
+    3053450,
+    2015430,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "Codex": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    505000,
+    0,
+    595900,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  "2026-11-15": {
+   "Claude Code": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    2289450,
+    2671450,
+    3053450,
+    3254605,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "Codex": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    555500,
+    0,
+    636300,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  "2026-11-17": {
+   "Claude Code": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    2289450,
+    2671450,
+    3053450,
+    3435450,
+    1105125,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "Codex": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    606000,
+    0,
+    676700,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  "2026-11-19": {
+   "Claude Code": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    427330,
+    2365850,
+    2883205,
+    219395,
+    0,
+    0,
+    0
+   ],
+   "Codex": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    404000,
+    909000,
+    0,
+    0,
+    0,
+    0
+   ]
+  }
+ },
+ "year_top": {
+  "2026": {
+   "model": [
+    [
+     "claude-opus-5-5|Claude Code",
+     55679010
+    ],
+    [
+     "claude-sonnet-5-5|Claude Code",
+     20200230
+    ],
+    [
+     "gpt-6.1-sol|Codex",
+     4989400
+    ],
+    [
+     "gpt-5.3-codex-spark|Codex",
+     4595500
+    ],
+    [
+     "claude-haiku-5-5|Claude Code",
+     646725
+    ]
+   ],
+   "project": [
+    [
+     "C:\\work\\usage-tracker|Claude Code",
+     76525965
+    ],
+    [
+     "photo|Codex",
+     9584900
+    ]
+   ]
+  }
+ },
+ "longest_turn_ms": {},
+ "activity": {
+  "command": {
+   "/model|Claude Code": {
+    "2026-11-19": 1
+   }
+  }
+ },
+ "plan_limits": [
+  {
+   "plan": "Max 20x",
+   "service": "Claude Code",
+   "source": "live",
+   "as_of": "2026-11-19T20:49:19Z",
+   "error": null,
+   "breakdown": [],
+   "spend": null,
+   "windows": [
+    {
+     "label": "5-hour session",
+     "used_percent": 82,
+     "resets_at": 1795129399,
+     "projection": {
+      "pct": 82.0,
+      "rate_per_hour": 21.5,
+      "hits_at": 1795124359
+     }
+    },
+    {
+     "label": "7-day, all models",
+     "used_percent": 46.4,
+     "resets_at": 1795394959,
+     "projection": {
+      "pct": 46.4,
+      "rate_per_hour": 0.19,
+      "at_reset": 60.8
+     }
+    },
+    {
+     "label": "7-day, Opus",
+     "used_percent": 12,
+     "resets_at": 1795394959
+    }
+   ]
+  },
+  {
+   "plan": "Pro",
+   "service": "Codex",
+   "source": "cached",
+   "as_of": "2026-11-18T18:49:19Z",
+   "error": "live check failed (offline?)",
+   "details": [
+    "Credit balance: 42.5"
+   ],
+   "windows": [
+    {
+     "label": "5-hour",
+     "used_percent": 93,
+     "resets_at": 1795119559
+    },
+    {
+     "label": "7-day",
+     "used_percent": 71,
+     "resets_at": 1795553959
+    }
+   ]
+  }
+ ],
+ "api": [
+  {
+   "provider": "Anthropic",
+   "configured": true,
+   "env": "ANTHROPIC_ADMIN_KEY",
+   "console": "https://platform.claude.com/settings/admin-keys",
+   "today": 3.4182,
+   "month": 1284.5731,
+   "last30": 2011.9,
+   "daily": {
+    "2026-11-19": 3.4182
+   },
+   "tokens_30d": {},
+   "models": [],
+   "source": "live",
+   "as_of": "2026-11-19T20:49:19Z",
+   "error": null,
+   "balance": {
+    "entered": 250.0,
+    "as_of": "2026-11-13T20:49:19Z",
+    "spent_since": 61.37,
+    "remaining": 188.63
+   }
+  },
+  {
+   "provider": "OpenAI",
+   "configured": true,
+   "env": "OPENAI_ADMIN_KEY",
+   "console": "https://platform.openai.com/settings/organization/admin-keys",
+   "today": 0.0,
+   "month": 18.2,
+   "last30": 44.015,
+   "daily": {},
+   "tokens_30d": {},
+   "models": [],
+   "source": "cached",
+   "as_of": "2026-11-17T19:49:19Z",
+   "error": "OpenAI usage report failed (HTTP 500)",
+   "balance": {
+    "entered": 20.0,
+    "as_of": "2026-11-10T20:49:19Z",
+    "spent_since": 16.58,
+    "remaining": 3.42
+   }
+  }
+ ],
+ "openai_analytics": {
+  "summary": {
+   "lifetimeTokens": 1843250112,
+   "peakDailyTokens": 91234567
+  },
+  "daily": {
+   "2026-11-11": 3000000,
+   "2026-11-13": 4000000,
+   "2026-11-15": 5000000,
+   "2026-11-17": 6000000
+  },
+  "source": "live",
+  "as_of": "2026-11-19T20:49:19Z",
+  "error": null
+ },
+ "has_pricing": true,
+ "generated": "2026-11-19 20:49",
+ "today": "2026-11-19",
+ "now_epoch": 1795121359,
+ "warnings": [],
+ "_working_details": [
+  {
+   "tool": "Claude Code",
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "project": "usage-tracker",
+   "title": "Port the widget to Rust",
+   "task": "make the hover card match the tkinter one, then run the differential check again",
+   "age": 8,
+   "subagents": [
+    {
+     "type": "Explore agent",
+     "description": "find every strftime call in widget.py",
+     "model": "claude-haiku-5-5",
+     "effort": null,
+     "age": 13
+    }
+   ],
+   "_describe": "Opus 5.5 med working on usage-tracker\n  “Port the widget to Rust”\n  Last prompt: make the hover card match the tkinter one, then run the differential check again\n  ↳ Explore agent · Haiku 5.5: find every strftime call in widget.py\n  Claude Code · last write 8s ago"
+  },
+  {
+   "tool": "Codex",
+   "model": "gpt-6.1-sol",
+   "effort": "high",
+   "project": "photo",
+   "title": "Speed up import",
+   "task": "speed up the RAW importer",
+   "age": 41,
+   "subagents": [
+    {
+     "type": "Ada (subagent)",
+     "description": "profile the thumbnail cache",
+     "model": "gpt-6.1-sol",
+     "effort": "medium",
+     "age": 46,
+     "project": null
+    }
+   ],
+   "_describe": "gpt-6.1-sol high working on photo\n  “Speed up import”\n  Last prompt: speed up the RAW importer\n  ↳ Ada (subagent) · gpt-6.1-sol med: profile the thumbnail cache\n  Codex · last write 41s ago"
+  }
+ ]
+}

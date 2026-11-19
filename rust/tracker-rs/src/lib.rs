@@ -191,21 +191,6 @@ fn codex_titles(py: Python<'_>) -> PyResult<Py<PyAny>> {
         .and_then(|v| crate::pyconv::ToPy::to_py(&v, py))
 }
 
-fn codex_db_inner(prefix: Bound<'_, PyAny>) -> Result<serde_json::Value, String> {
-    let prefix: serde_json::Value = crate::pyconv::FromPy::from_py(&prefix)?;
-    let out = port::codex_db(prefix)?;
-    Ok(out)
-}
-
-/// `codex_db`.
-#[pyfunction]
-#[pyo3(name = "codex_db", signature = (prefix))]
-fn codex_db(py: Python<'_>, prefix: Bound<'_, PyAny>) -> PyResult<Py<PyAny>> {
-    codex_db_inner(prefix)
-        .map_err(error)
-        .and_then(|v| crate::pyconv::ToPy::to_py(&v, py))
-}
-
 fn codex_db_working_inner(now: f64) -> Result<serde_json::Value, String> {
     let out = port::codex_db_working(now)?;
     Ok(out)
@@ -231,29 +216,6 @@ fn claude_session_info_inner(path: Bound<'_, PyAny>) -> Result<serde_json::Value
 #[pyo3(name = "claude_session_info", signature = (path))]
 fn claude_session_info(py: Python<'_>, path: Bound<'_, PyAny>) -> PyResult<Py<PyAny>> {
     claude_session_info_inner(path)
-        .map_err(error)
-        .and_then(|v| crate::pyconv::ToPy::to_py(&v, py))
-}
-
-fn codex_session_info_inner(
-    path: Bound<'_, PyAny>,
-    titles: Bound<'_, PyAny>,
-) -> Result<serde_json::Value, String> {
-    let path: serde_json::Value = crate::pyconv::FromPy::from_py(&path)?;
-    let titles: serde_json::Value = crate::pyconv::FromPy::from_py(&titles)?;
-    let out = port::codex_session_info(path, titles)?;
-    Ok(out)
-}
-
-/// `codex_session_info`.
-#[pyfunction]
-#[pyo3(name = "codex_session_info", signature = (path, titles))]
-fn codex_session_info(
-    py: Python<'_>,
-    path: Bound<'_, PyAny>,
-    titles: Bound<'_, PyAny>,
-) -> PyResult<Py<PyAny>> {
-    codex_session_info_inner(path, titles)
         .map_err(error)
         .and_then(|v| crate::pyconv::ToPy::to_py(&v, py))
 }
@@ -334,20 +296,6 @@ fn scan_codex(py: Python<'_>, events: Option<Bound<'_, PyAny>>) -> PyResult<Py<P
         .and_then(|v| crate::pyconv::ToPy::to_py(&v, py))
 }
 
-fn utc_now_iso_inner() -> Result<serde_json::Value, String> {
-    let out = port::utc_now_iso()?;
-    Ok(out)
-}
-
-/// `utc_now_iso`.
-#[pyfunction]
-#[pyo3(name = "utc_now_iso", signature = ())]
-fn utc_now_iso(py: Python<'_>) -> PyResult<Py<PyAny>> {
-    utc_now_iso_inner()
-        .map_err(error)
-        .and_then(|v| crate::pyconv::ToPy::to_py(&v, py))
-}
-
 fn to_epoch_inner(iso: Bound<'_, PyAny>) -> Result<serde_json::Value, String> {
     let iso: serde_json::Value = crate::pyconv::FromPy::from_py(&iso)?;
     let out = port::to_epoch(iso)?;
@@ -388,32 +336,6 @@ fn window_label_inner(minutes: f64) -> Result<serde_json::Value, String> {
 #[pyo3(name = "window_label", signature = (minutes))]
 fn window_label(py: Python<'_>, minutes: f64) -> PyResult<Py<PyAny>> {
     window_label_inner(minutes)
-        .map_err(error)
-        .and_then(|v| crate::pyconv::ToPy::to_py(&v, py))
-}
-
-fn get_json_inner(
-    url: Bound<'_, PyAny>,
-    headers: Bound<'_, PyAny>,
-    app: Bound<'_, PyAny>,
-) -> Result<serde_json::Value, String> {
-    let url: serde_json::Value = crate::pyconv::FromPy::from_py(&url)?;
-    let headers: serde_json::Value = crate::pyconv::FromPy::from_py(&headers)?;
-    let app: serde_json::Value = crate::pyconv::FromPy::from_py(&app)?;
-    let out = port::get_json(url, headers, app)?;
-    Ok(out)
-}
-
-/// `get_json`.
-#[pyfunction]
-#[pyo3(name = "get_json", signature = (url, headers, app))]
-fn get_json(
-    py: Python<'_>,
-    url: Bound<'_, PyAny>,
-    headers: Bound<'_, PyAny>,
-    app: Bound<'_, PyAny>,
-) -> PyResult<Py<PyAny>> {
-    get_json_inner(url, headers, app)
         .map_err(error)
         .and_then(|v| crate::pyconv::ToPy::to_py(&v, py))
 }
@@ -542,44 +464,6 @@ fn aggregate(
         .and_then(|v| crate::pyconv::ToPy::to_py(&v, py))
 }
 
-fn write_dashboard_inner(
-    data: Bound<'_, PyAny>,
-    out_path: Bound<'_, PyAny>,
-) -> Result<serde_json::Value, String> {
-    let data: serde_json::Value = crate::pyconv::FromPy::from_py(&data)?;
-    let out_path: serde_json::Value = crate::pyconv::FromPy::from_py(&out_path)?;
-    let out = port::write_dashboard(data, out_path)?;
-    Ok(out)
-}
-
-/// `write_dashboard`.
-#[pyfunction]
-#[pyo3(name = "write_dashboard", signature = (data, out_path))]
-fn write_dashboard(
-    py: Python<'_>,
-    data: Bound<'_, PyAny>,
-    out_path: Bound<'_, PyAny>,
-) -> PyResult<Py<PyAny>> {
-    write_dashboard_inner(data, out_path)
-        .map_err(error)
-        .and_then(|v| crate::pyconv::ToPy::to_py(&v, py))
-}
-
-fn build_inner(out_path: Bound<'_, PyAny>) -> Result<serde_json::Value, String> {
-    let out_path: serde_json::Value = crate::pyconv::FromPy::from_py(&out_path)?;
-    let out = port::build(out_path)?;
-    Ok(out)
-}
-
-/// `build`.
-#[pyfunction]
-#[pyo3(name = "build", signature = (out_path))]
-fn build(py: Python<'_>, out_path: Bound<'_, PyAny>) -> PyResult<Py<PyAny>> {
-    build_inner(out_path)
-        .map_err(error)
-        .and_then(|v| crate::pyconv::ToPy::to_py(&v, py))
-}
-
 #[pymodule]
 #[pyo3(name = "_native")]
 fn native_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
@@ -592,19 +476,15 @@ fn native_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(pretty_model, m)?)?;
     m.add_function(wrap_pyfunction!(short_text, m)?)?;
     m.add_function(wrap_pyfunction!(codex_titles, m)?)?;
-    m.add_function(wrap_pyfunction!(codex_db, m)?)?;
     m.add_function(wrap_pyfunction!(codex_db_working, m)?)?;
     m.add_function(wrap_pyfunction!(claude_session_info, m)?)?;
-    m.add_function(wrap_pyfunction!(codex_session_info, m)?)?;
     m.add_function(wrap_pyfunction!(working_details, m)?)?;
     m.add_function(wrap_pyfunction!(describe_session, m)?)?;
     m.add_function(wrap_pyfunction!(scan_claude, m)?)?;
     m.add_function(wrap_pyfunction!(scan_codex, m)?)?;
-    m.add_function(wrap_pyfunction!(utc_now_iso, m)?)?;
     m.add_function(wrap_pyfunction!(to_epoch, m)?)?;
     m.add_function(wrap_pyfunction!(pretty_plan, m)?)?;
     m.add_function(wrap_pyfunction!(window_label, m)?)?;
-    m.add_function(wrap_pyfunction!(get_json, m)?)?;
     m.add_function(wrap_pyfunction!(codex_live, m)?)?;
     m.add_function(wrap_pyfunction!(codex_details, m)?)?;
     m.add_function(wrap_pyfunction!(claude_live, m)?)?;
@@ -612,7 +492,5 @@ fn native_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(load_pricing, m)?)?;
     m.add_function(wrap_pyfunction!(cost_of, m)?)?;
     m.add_function(wrap_pyfunction!(aggregate, m)?)?;
-    m.add_function(wrap_pyfunction!(write_dashboard, m)?)?;
-    m.add_function(wrap_pyfunction!(build, m)?)?;
     Ok(())
 }

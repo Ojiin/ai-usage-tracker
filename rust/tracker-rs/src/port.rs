@@ -77,12 +77,6 @@ pub fn codex_titles() -> Result<serde_json::Value, String> {
     unimplemented!("port `codex_titles` from tracker.py")
 }
 
-/// Port of `codex_db` (`tracker.py:154`).
-pub fn codex_db(prefix: serde_json::Value) -> Result<serde_json::Value, String> {
-    let _ = &prefix;
-    unimplemented!("port `codex_db` from tracker.py")
-}
-
 /// Port of `codex_db_working` (`tracker.py:168`).
 pub fn codex_db_working(now: f64) -> Result<serde_json::Value, String> {
     let _ = &now;
@@ -93,15 +87,6 @@ pub fn codex_db_working(now: f64) -> Result<serde_json::Value, String> {
 pub fn claude_session_info(path: serde_json::Value) -> Result<serde_json::Value, String> {
     let _ = &path;
     unimplemented!("port `claude_session_info` from tracker.py")
-}
-
-/// Port of `codex_session_info` (`tracker.py:234`).
-pub fn codex_session_info(
-    path: serde_json::Value,
-    titles: serde_json::Value,
-) -> Result<serde_json::Value, String> {
-    let _ = (&path, &titles);
-    unimplemented!("port `codex_session_info` from tracker.py")
 }
 
 /// Port of `working_details` (`tracker.py:264`).
@@ -139,11 +124,6 @@ pub fn scan_codex(events: Option<serde_json::Value>) -> Result<serde_json::Value
     unimplemented!("port `scan_codex` from tracker.py")
 }
 
-/// Port of `utc_now_iso` (`tracker.py:521`).
-pub fn utc_now_iso() -> Result<serde_json::Value, String> {
-    unimplemented!("port `utc_now_iso` from tracker.py")
-}
-
 /// Port of `to_epoch` (`tracker.py:525`).
 pub fn to_epoch(iso: serde_json::Value) -> Result<serde_json::Value, String> {
     let _ = &iso;
@@ -160,16 +140,6 @@ pub fn pretty_plan(raw: serde_json::Value) -> Result<serde_json::Value, String> 
 pub fn window_label(minutes: f64) -> Result<serde_json::Value, String> {
     let _ = &minutes;
     unimplemented!("port `window_label` from tracker.py")
-}
-
-/// Port of `get_json` (`tracker.py:544`).
-pub fn get_json(
-    url: serde_json::Value,
-    headers: serde_json::Value,
-    app: serde_json::Value,
-) -> Result<serde_json::Value, String> {
-    let _ = (&url, &headers, &app);
-    unimplemented!("port `get_json` from tracker.py")
 }
 
 /// Port of `codex_live` (`tracker.py:557`).
@@ -220,17 +190,9 @@ pub fn aggregate(
     unimplemented!("port `aggregate` from tracker.py")
 }
 
-/// Port of `write_dashboard` (`tracker.py:795`).
-pub fn write_dashboard(
-    data: serde_json::Value,
-    out_path: serde_json::Value,
-) -> Result<serde_json::Value, String> {
-    let _ = (&data, &out_path);
-    unimplemented!("port `write_dashboard` from tracker.py")
-}
-
-/// Port of `build` (`tracker.py:800`).
-pub fn build(out_path: serde_json::Value) -> Result<serde_json::Value, String> {
-    let _ = &out_path;
-    unimplemented!("port `build` from tracker.py")
+/// link probe
+pub mod native {
+    pub fn probe() -> std::path::PathBuf {
+        limits_watch_rs::port::native::store()
+    }
 }

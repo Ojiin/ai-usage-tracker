@@ -1,0 +1,38 @@
+[package]
+name = "ai-usage-tracker-widget"
+version = "0.1.0"
+description = "AI Usage Tracker: the always-on-top desktop widget"
+edition = "2021"
+license = "MIT"
+default-run = "AIUsageTracker"
+
+[lib]
+name = "ai_usage_tracker_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[[bin]]
+name = "AIUsageTracker"
+path = "src/main.rs"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
+tauri-plugin-notification = "2"
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+# preserve_order: the scan data is walked in the order Python's dicts had.
+serde_json = { version = "1", features = ["preserve_order"] }
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+# The ported core. Only src/core.rs may call these crates.
+limits-watch-rs = { path = "../../limits-watch-rs" }
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.56"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true
