@@ -732,7 +732,7 @@ pub mod native {
     pub type Reading = Result<(Value, Value), String>;
 
     /// The dashboard page, as the original bundles `template.html`.
-    pub const TEMPLATE: &str = include_str!("../../../template.html");
+    pub const TEMPLATE: &str = include_str!("../template.html");
 
     /// The folders the original computes when it is imported.
     pub struct Dirs {

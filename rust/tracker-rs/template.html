@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="300">
+<title>AI Usage Tracker</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --text: #1b1f24; --muted: #667085; --border: #e4e7ec;
+    --claude: #d97757; --codex: #2f6fde; --warn: #d92d20; --ok: #12b76a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0f1115; --card: #181b21; --text: #e6e8eb; --muted: #98a2b3; --border: #2a2f37;
+            --claude: #e8916f; --codex: #5b8ff0; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1180px; margin: 0 auto; padding: 24px 16px 48px; }
+  header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; }
+  h1 { font-size: 22px; margin: 0; }
+  h2 { font-size: 15px; margin: 0 0 12px; }
+  .muted { color: var(--muted); }
+  .grid { display: grid; gap: 16px; margin-top: 16px; }
+  .kpis { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+  .two { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; min-width: 0; }
+  .kpi .v { font-size: 26px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .kpi .l { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  .kpi .s { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .bar { height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; margin: 6px 0 4px; }
+  .bar > div { height: 100%; border-radius: 5px; }
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .seg button { border: 0; background: transparent; color: var(--text); padding: 4px 10px; cursor: pointer; font: inherit; }
+  .seg button.on { background: var(--border); }
+  .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+  .chart { position: relative; height: 300px; }
+  .heat { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 12px); gap: 3px; overflow-x: auto; padding-bottom: 4px; }
+  .heat i { width: 12px; height: 12px; border-radius: 2px; background: var(--border); }
+  .heat i.l1, .legend i.l1 { background: color-mix(in srgb, var(--ok) 30%, var(--border)); }
+  .heat i.l2, .legend i.l2 { background: color-mix(in srgb, var(--ok) 55%, var(--border)); }
+  .heat i.l3, .legend i.l3 { background: color-mix(in srgb, var(--ok) 80%, var(--border)); }
+  .heat i.l4, .legend i.l4 { background: var(--ok); }
+  .heat i.out { visibility: hidden; }
+  .legend { display: flex; align-items: center; gap: 3px; font-size: 12px; }
+  .legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 14px; }
+  .stats .v { font-size: 20px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .stats .l { color: var(--muted); font-size: 12px; }
+  .blist { list-style: none; margin: 0; padding: 0; }
+  .blist li { position: relative; display: flex; justify-content: space-between; gap: 8px; padding: 4px 8px; margin-bottom: 3px; font-variant-numeric: tabular-nums; }
+  .blist li span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; z-index: 1; }
+  .blist li b { font-weight: 600; z-index: 1; }
+  .blist li .fill { position: absolute; inset: 0 auto 0 0; border-radius: 4px; opacity: .18; }
+  .four { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+  .pager { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 10px; font-size: 12px; }
+  .pager button { border: 1px solid var(--border); background: transparent; color: var(--text); border-radius: 6px; padding: 3px 10px; cursor: pointer; font: inherit; }
+  .pager button:disabled { opacity: .4; cursor: default; }
+  .pager[hidden] { display: none; }
+  .tablewrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--muted); font-weight: 500; font-size: 12px; cursor: pointer; user-select: none; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>AI Usage Tracker</h1>
+    <span class="muted" id="gen"></span>
+  </header>
+
+  <section class="grid kpis" id="kpis"></section>
+
+  <section class="grid two">
+    <div class="card" id="limits"><h2>Plan limits</h2></div>
+    <div class="card"><h2>Token mix (selected range)</h2><div class="chart" style="height:220px"><canvas id="mix"></canvas></div></div>
+  </section>
+
+  <section class="card" style="margin-top:16px">
+    <div class="row">
+      <h2 style="margin:0">Tokens per day</h2>
+      <div class="seg" id="range">
+        <button data-d="7">7d</button><button data-d="30" class="on">30d</button><button data-d="90">90d</button><button data-d="0">All</button>
+      </div>
+    </div>
+    <div class="chart"><canvas id="daily"></canvas></div>
+  </section>
+
+  <section class="card" style="margin-top:16px">
+    <div class="row">
+      <h2 style="margin:0">Activity, last 12 months</h2>
+      <div class="legend muted">Less <i style="background:var(--border)"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i> More</div>
+    </div>
+    <div class="stats" id="streaks"></div>
+    <div class="heat" id="heat"></div>
+  </section>
+
+  <section class="grid two">
+    <div class="card"><h2>Time of day <span class="muted" style="font-weight:400">(selected range, local time)</span></h2><div class="chart" style="height:220px"><canvas id="hours"></canvas></div></div>
+    <div class="card"><h2>Day of week <span class="muted" style="font-weight:400">(selected range)</span></h2><div class="chart" style="height:220px"><canvas id="weekdays"></canvas></div></div>
+  </section>
+
+  <section class="grid four">
+    <div class="card"><h2>Tools <span class="muted" style="font-weight:400">(calls)</span></h2><ul class="blist" id="b-tool"></ul></div>
+    <div class="card"><h2>Subagents and skills</h2><ul class="blist" id="b-agent"></ul></div>
+    <div class="card"><h2>MCP servers <span class="muted" style="font-weight:400">(calls)</span></h2><ul class="blist" id="b-mcp"></ul></div>
+    <div class="card"><h2>Slash commands</h2><ul class="blist" id="b-command"></ul></div>
+  </section>
+  <p class="muted" style="font-size:12px;margin:6px 0 0">Charts and lists above follow the range picked under Tokens per day.</p>
+
+    <section class="card" style="margin-top:16px" id="claude-account">
+      <h2>Claude account analytics</h2>
+      <p class="muted" id="ca-status"></p>
+      <div class="grid kpis" id="ca-summary"></div>
+      <div class="grid two" id="ca-account" style="margin-top:12px">
+        <div><h2>This week by surface <span class="muted" style="font-weight:400">(account-reported, % of weekly limit)</span></h2><ul class="blist" id="ca-surfaces"></ul></div>
+        <div id="ca-spend-wrap"><h2>Extra usage <span class="muted" style="font-weight:400">(account-reported)</span></h2><p id="ca-spend" style="margin:0"></p></div>
+      </div>
+      <div class="chart" style="height:240px;margin-top:16px"><canvas id="ca-daily"></canvas></div>
+      <p class="muted">Anthropic doesn't publish an account token history, so lifetime, peak, streak, turn and daily figures come from the Claude Code logs on this PC: other PCs, claude.ai chat and Cowork are not included. The weekly split by surface and extra-usage spend are account-reported. Subscription percentages, API charges, and API-equivalent estimates measure different things.</p>
+      <div class="grid two">
+        <div><h2>Where local Claude Code tokens go: models</h2><ul class="blist" id="ca-models"></ul></div>
+        <div><h2>Where local Claude Code tokens go: projects</h2><ul class="blist" id="ca-projects"></ul></div>
+      </div>
+      <p class="muted">Local breakdowns are all-time on this PC. Tool-call counts elsewhere are activity counts, not token charges per tool.</p>
+      <p><a href="https://claude.ai/settings/usage" target="_blank" rel="noopener">Open Claude usage</a></p>
+    </section>
+    <section class="card" style="margin-top:16px" id="openai-account">
+      <h2>OpenAI account analytics</h2>
+      <p class="muted" id="oa-status"></p>
+      <div class="grid kpis" id="oa-summary"></div>
+      <div class="chart" style="height:240px;margin-top:16px"><canvas id="oa-daily"></canvas></div>
+      <p class="muted">Account-reported token activity. Dates follow the OpenAI report; local charts use this PC's time zone. These totals overlap local Codex usage and must not be added to it. Subscription percentages, API charges, and API-equivalent estimates measure different things.</p>
+      <div class="grid two">
+        <div><h2>Where local Codex tokens go: models</h2><ul class="blist" id="oa-models"></ul></div>
+        <div><h2>Where local Codex tokens go: projects</h2><ul class="blist" id="oa-projects"></ul></div>
+      </div>
+      <p class="muted">Local breakdowns are all-time on this PC; OpenAI's account summary does not provide model or project attribution. Tool-call counts elsewhere are activity counts, not token charges per tool.</p>
+      <p><a href="https://chatgpt.com/codex/settings/usage" target="_blank" rel="noopener">Open Codex usage</a> · <a href="https://platform.openai.com/usage" target="_blank" rel="noopener">Open API usage</a></p>
+    </section>
+    <section class="card" style="margin-top:16px" id="api">
+    <h2>API spend</h2>
+    <div class="grid kpis" id="api-kpis" style="margin-top:0"></div>
+    <div class="chart" id="api-chart-wrap" style="height:220px;margin-top:16px"><canvas id="api-daily"></canvas></div>
+    <div class="tablewrap" style="margin-top:12px"><table id="t-api-models"></table></div>
+    <p class="muted" id="api-note" style="font-size:12px;margin:8px 0 0"></p>
+  </section>
+
+  <section class="grid two">
+    <div class="card"><h2>By model</h2><div class="tablewrap"><table id="t-model"></table></div></div>
+    <div class="card"><h2>By project</h2><div class="tablewrap"><table id="t-project"></table></div></div>
+  </section>
+  <section class="card" style="margin-top:16px">
+    <div class="row"><h2 style="margin:0" id="yr-title">Year in review</h2><div class="seg" id="yr-pick"></div></div>
+    <div class="stats" id="yr-stats" style="margin-top:8px"></div>
+    <div class="grid four" style="margin-top:0" id="yr-lists"></div>
+  </section>
+  <p class="muted" id="note" style="margin-top:16px"></p>
+</main>
+
+<script>
+const DATA = /*__DATA__*/null;
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const COLORS = { "Claude Code": css("--claude"), "Codex": css("--codex") };
+const fmt = n => n >= 1e9 ? (n / 1e9).toFixed(2) + "B" : n >= 1e6 ? (n / 1e6).toFixed(1) + "M" : n >= 1e3 ? (n / 1e3).toFixed(1) + "k" : String(n);
+const money = n => "$" + n.toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 });
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+Chart.defaults.color = css("--muted");
+Chart.defaults.borderColor = css("--border");
+
+document.getElementById("gen").textContent = "Generated " + DATA.generated;
+
+function since(days) {
+  if (!days) return "";
+  const d = new Date(); d.setDate(d.getDate() - days + 1);
+  return d.toLocaleDateString("sv-SE");  // YYYY-MM-DD in local time
+}
+const sumDays = (from, to) => DATA.day.filter(r => r.key >= from && (!to || r.key <= to))
+  .reduce((a, r) => ({ total: a.total + r.total, cost: a.cost + r.cost, calls: a.calls + r.calls }), { total: 0, cost: 0, calls: 0 });
+
+function kpis() {
+  const all = sumDays(""), m30 = sumDays(since(30)), today = sumDays(DATA.today, DATA.today);
+  const month = sumDays(DATA.today.slice(0, 8) + "01");
+  const cards = [
+    ["Today", today, ""],
+    ["This month", month, ""],
+    ["Last 30 days", m30, ""],
+    ["All time", all, DATA.day.length ? "since " + DATA.day.map(r => r.key).sort()[0] : ""],
+  ];
+  let html = cards.map(([l, v, s]) => `<div class="card kpi"><div class="l">${l}</div><div class="v">${fmt(v.total)}</div>
+    <div class="s">${v.calls.toLocaleString()} usage records${DATA.has_pricing ? " · " + money(v.cost) + " API-equiv" : ""}${s ? " · " + s : ""}</div></div>`).join("");
+  html += DATA.tool.map(t => `<div class="card kpi"><div class="l"><span class="dot" style="background:${COLORS[t.key]}"></span>${esc(t.key)}</div>
+    <div class="v">${fmt(t.total)}</div><div class="s">${t.session_count} sessions · ${fmt(t.output)} output</div></div>`).join("");
+  document.getElementById("kpis").innerHTML = html;
+}
+
+function limits() {
+  const el = document.getElementById("limits");
+  const pace = (p, expired) => {
+    if (!p || expired) return "";
+    const at = p.hits_at ? "At this pace: 100% by " + new Date(p.hits_at * 1000).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })
+      : `On pace for ~${Math.round(p.at_reset)}% by reset`;
+    return `<div style="font-size:12px;color:${p.hits_at ? "#f79009" : "var(--muted)"}">${at} (+${p.rate_per_hour}%/h)</div>`;
+  };
+  const meter = w => {
+    const expired = w.resets_at && w.resets_at < Date.now() / 1000;
+    const pct = Number(w.used_percent);
+    const color = pct >= 90 ? css("--warn") : pct >= 70 ? "#f79009" : css("--ok");
+    const reset = w.resets_at ? new Date(w.resets_at * 1000).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" }) : "";
+    return `<div style="margin-bottom:10px"><div class="row" style="margin:0"><span>${esc(w.label)}</span><b>${expired ? "Last " : ""}${pct.toFixed(0)}%</b></div>
+      <div class="bar"><div style="width:${Math.min(pct, 100)}%;background:${color}"></div></div>
+      <div class="muted" style="font-size:12px">${expired ? "Reading expired; current usage unknown" : reset ? "resets " + reset : ""}${w.as_of ? " · observed " + esc(new Date(w.as_of).toLocaleString()) : ""}</div>${pace(w.projection, expired)}</div>`;
+  };
+  const sourceText = { live: "live, checked", cached: "last live check", log: "from last Codex turn," };
+  const html = (DATA.plan_limits || []).map(e => {
+    const when = e.as_of ? `${sourceText[e.source] || ""} ${new Date(e.as_of).toLocaleString()}` : "";
+    const warn = e.error ? `<div style="color:#f79009;font-size:12px">${esc(e.error)}</div>` : "";
+    const split = (e.breakdown || []).filter(r => r.percent).map(r => `${esc(r.key.replace(/_/g, " "))} ${r.percent}%`).join(" · ");
+    return `<div style="margin-bottom:14px">
+      <div class="row" style="margin-bottom:6px"><b><span class="dot" style="background:${COLORS[e.service] || css("--muted")}"></span>${esc(e.service)}</b>
+        <span class="muted">${esc(e.plan || "")}</span></div>
+      ${(e.windows || []).length ? e.windows.map(meter).join("") : `<div class="muted">No limit data yet.</div>`}
+      ${(e.details || []).map(d => `<div class="muted" style="font-size:12px">${esc(d)}</div>`).join("")}
+      ${split ? `<div class="muted" style="font-size:12px">Weekly use by surface: ${split}</div>` : ""}
+      <div class="muted" style="font-size:12px">${when}</div>${warn}</div>`;
+  }).join("");
+  el.insertAdjacentHTML("beforeend", html || `<p class="muted">No plan limit data.</p>`);
+}
+
+let dailyChart, mixChart, hoursChart, weekdaysChart;
+function charts(days) {
+  const from = since(days);
+  const dates = Object.keys(DATA.daily_tool).filter(d => d >= from);
+  if (days) {  // fill empty days so gaps show
+    dates.length = 0;
+    for (let i = days - 1; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); dates.push(d.toLocaleDateString("sv-SE")); }
+  }
+  const tools = DATA.tool.map(t => t.key);
+  dailyChart?.destroy();
+  dailyChart = new Chart(document.getElementById("daily"), {
+    type: "bar",
+    data: { labels: dates, datasets: tools.map(t => ({ label: t, backgroundColor: COLORS[t], borderRadius: 3,
+      data: dates.map(d => (DATA.daily_tool[d] || {})[t] || 0) })) },
+    options: { maintainAspectRatio: false, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, ticks: { callback: fmt } } },
+      plugins: { tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.raw.toLocaleString()}` } } } },
+  });
+  timeCharts(from);
+  activityLists(from);
+  const rows = DATA.day.filter(r => r.key >= from);
+  const mix = ["input", "cache_write", "cache_read", "output"].map(f => rows.reduce((a, r) => a + r[f], 0));
+  mixChart?.destroy();
+  mixChart = new Chart(document.getElementById("mix"), {
+    type: "doughnut",
+    data: { labels: ["Input", "Cache write", "Cache read", "Output"],
+      datasets: [{ data: mix, backgroundColor: ["#2f6fde", "#f79009", "#98a2b3", "#12b76a"], borderColor: css("--card") }] },
+    options: { maintainAspectRatio: false, plugins: { legend: { position: "right" },
+      tooltip: { callbacks: { label: c => `${c.label}: ${c.raw.toLocaleString()}` } } } },
+  });
+}
+
+const PAGE_SIZE = 10;
+function table(id, rows) {
+  const cols = [["Name", r => r.key.split("|")[0]], ["Tool", r => r.key.split("|")[1]], ["Total", r => r.total], ["Input", r => r.input],
+    ["Cache read", r => r.cache_read], ["Output", r => r.output], ["Reasoning (in output)", r => r.reasoning || 0], ["Sessions", r => r.session_count]];
+  if (DATA.has_pricing) cols.push(["API-equiv $", r => r.priced ? r.cost : -1]);
+  let sortCol = 2, asc = false, page = 0;
+  const el = document.getElementById(id);
+  // 10 rows per page; the pager sits under the table's scroll wrapper
+  const pager = document.createElement("div");
+  pager.className = "pager";
+  el.parentElement.after(pager);
+  const pages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const render = () => {
+    const sorted = [...rows].sort((a, b) => { const x = cols[sortCol][1](a), y = cols[sortCol][1](b); return (x > y ? 1 : x < y ? -1 : 0) * (asc ? 1 : -1); });
+    const first = page * PAGE_SIZE;
+    el.innerHTML = `<tr>${cols.map((c, i) => `<th data-i="${i}">${c[0]}${i === sortCol ? (asc ? " ▲" : " ▼") : ""}</th>`).join("")}</tr>` +
+      sorted.slice(first, first + PAGE_SIZE).map(r => `<tr>${cols.map(([name, f], i) => {
+        const v = f(r);
+        if (i === 1) return `<td><span class="dot" style="background:${COLORS[v]}"></span>${esc(v)}</td>`;
+        if (name === "API-equiv $") return `<td>${v < 0 ? "—" : money(v)}</td>`;
+        return `<td title="${typeof v === "number" ? v.toLocaleString() : ""}">${typeof v === "number" && name !== "Sessions" ? fmt(v) : esc(v)}</td>`;
+      }).join("")}</tr>`).join("");
+    el.querySelectorAll("th").forEach(th => th.onclick = () => { const i = +th.dataset.i; asc = i === sortCol ? !asc : i < 2; sortCol = i; page = 0; render(); });
+    pager.hidden = pages < 2;
+    pager.innerHTML = `<button data-p="-1" ${page === 0 ? "disabled" : ""}>‹ Prev</button>
+      <span class="muted">${first + 1}–${Math.min(first + PAGE_SIZE, rows.length)} of ${rows.length} · page ${page + 1} of ${pages}</span>
+      <button data-p="1" ${page === pages - 1 ? "disabled" : ""}>Next ›</button>`;
+    pager.querySelectorAll("button").forEach(b => b.onclick = () => { page = Math.min(Math.max(page + +b.dataset.p, 0), pages - 1); render(); });
+  };
+  render();
+}
+
+function api() {
+  const all = DATA.api || [], on = all.filter(p => p.configured), off = all.filter(p => !p.configured);
+  const API_COLORS = { Anthropic: css("--claude"), OpenAI: "#10a37f" };
+  const note = document.getElementById("api-note");
+  note.innerHTML = (off.length ? `Not tracked: ${off.map(p => `${esc(p.provider)} (set the <code>${esc(p.env)}</code> user environment variable to an admin key)`).join(", ")}. ` : "")
+    + "Spend comes from each provider's admin usage reports, in UTC days. Balances are estimates: the amount you entered minus spend reported since; neither provider publishes your credit balance.";
+  if (!on.length) {
+    ["api-kpis", "api-chart-wrap", "t-api-models"].forEach(id => document.getElementById(id).style.display = "none");
+    return;
+  }
+  document.getElementById("api-kpis").innerHTML = on.map(p => {
+    const b = p.balance;
+    const bal = b ? `<div class="s"><b style="color:${b.remaining < 5 ? css("--warn") : "inherit"}">≈ ${money(b.remaining)} left</b>
+        (${money(b.entered)} on ${new Date(b.as_of).toLocaleDateString()} − ${money(b.spent_since)})</div>`
+      : `<div class="s">Set a balance from the widget (right-click → Set API balance…)</div>`;
+    const stale = p.source === "cached" ? `<div class="s">last good report ${new Date(p.as_of).toLocaleString()}</div>` : "";
+    const err = p.error ? `<div class="s" style="color:#f79009">${esc(p.error)}</div>` : "";
+    return `<div class="card kpi"><div class="l"><span class="dot" style="background:${API_COLORS[p.provider]}"></span>${esc(p.provider)} API · this month</div>
+      <div class="v">${money(p.month || 0)}</div>
+      <div class="s">today ${money(p.today || 0)} · last 30 days ${money(p.last30 || 0)}</div>${bal}${stale}${err}</div>`;
+  }).join("");
+  const days = [];
+  for (let i = 29; i >= 0; i--) { const d = new Date(); d.setUTCDate(d.getUTCDate() - i); days.push(d.toISOString().slice(0, 10)); }
+  new Chart(document.getElementById("api-daily"), {
+    type: "bar",
+    data: { labels: days, datasets: on.map(p => ({ label: p.provider, backgroundColor: API_COLORS[p.provider], borderRadius: 3,
+      data: days.map(d => (p.daily || {})[d] || 0) })) },
+    options: { maintainAspectRatio: false, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, ticks: { callback: v => "$" + v } } },
+      plugins: { tooltip: { callbacks: { label: c => `${c.dataset.label}: ${money(c.raw)}` } } } },
+  });
+  const rows = on.flatMap(p => (p.models || []).map(m => ({ ...m, provider: p.provider })));
+  document.getElementById("t-api-models").innerHTML = rows.length
+    ? `<tr><th>Model (last 30 days)</th><th>Provider</th><th>Total</th><th>Input</th><th>Cache read</th><th>Output</th></tr>` +
+      rows.map(r => `<tr><td>${esc(r.model)}</td><td><span class="dot" style="background:${API_COLORS[r.provider]}"></span>${esc(r.provider)}</td>
+        <td>${fmt(r.total)}</td><td>${fmt(r.input)}</td><td>${fmt(r.cache_read)}</td><td>${fmt(r.output)}</td></tr>`).join("")
+    : "";
+}
+
+kpis();
+limits();
+api();
+// --- activity: heatmap, streaks, time of day, tool/agent/MCP/command lists ---
+const DAY_TOTAL = d => Object.values(DATA.daily_tool[d] || {}).reduce((a, b) => a + b, 0);
+const iso = d => d.toLocaleDateString("sv-SE");
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const hourLabel = h => new Date(2000, 0, 1, h).toLocaleTimeString(undefined, { hour: "numeric" });
+const prettyDay = d => new Date(d + "T12:00").toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+
+function streaks(days) {  // days: sorted active YYYY-MM-DD list
+  let longest = 0, run = 0, prev = null, longestEnd = null;
+  for (const d of days) {
+    const next = prev && iso(new Date(new Date(prev + "T12:00").getTime() + 864e5));
+    run = d === next ? run + 1 : 1;
+    if (run > longest) { longest = run; longestEnd = d; }
+    prev = d;
+  }
+  return { longest, longestEnd };
+}
+
+function currentStreak() {
+  const active = new Set(Object.keys(DATA.daily_tool).filter(d => DAY_TOTAL(d) > 0));
+  const d = new Date();
+  if (!active.has(iso(d))) d.setDate(d.getDate() - 1);  // today not started yet still keeps the streak
+  let n = 0;
+  while (active.has(iso(d))) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+
+function heatmap() {
+  const end = new Date(); end.setHours(12, 0, 0, 0);
+  const start = new Date(end); start.setDate(start.getDate() - 364);
+  start.setDate(start.getDate() - ((start.getDay() + 6) % 7));  // back to Monday
+  const values = [];
+  for (const d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) values.push([iso(d), DAY_TOTAL(iso(d))]);
+  const nonzero = values.map(v => v[1]).filter(v => v > 0).sort((a, b) => a - b);
+  const q = f => nonzero[Math.floor(f * (nonzero.length - 1))] || 0;
+  const cuts = [q(.25), q(.5), q(.75)];
+  const level = v => !v ? 0 : v <= cuts[0] ? 1 : v <= cuts[1] ? 2 : v <= cuts[2] ? 3 : 4;
+  document.getElementById("heat").innerHTML = values.map(([d, v]) =>
+    `<i class="l${level(v)}" title="${prettyDay(d)}: ${v ? fmt(v) + " tokens" : "no activity"}"></i>`).join("");
+  const year = values.filter(v => v[1] > 0);
+  const active = Object.keys(DATA.daily_tool).filter(d => DAY_TOTAL(d) > 0).sort();
+  const best = year.reduce((a, v) => v[1] > a[1] ? v : a, ["", 0]);
+  const s = streaks(active);
+  document.getElementById("streaks").innerHTML = [
+    ["Current streak", currentStreak() + " days", ""],
+    ["Longest streak", s.longest + " days", !s.longestEnd ? "" : s.longest === currentStreak() ? "ongoing" : "ended " + prettyDay(s.longestEnd)],
+    ["Active days", year.length + " of " + values.length, "last 12 months"],
+    ["Busiest day", best[1] ? fmt(best[1]) : "—", best[0] ? prettyDay(best[0]) : ""],
+  ].map(([l, v, sub]) => `<div><div class="l">${l}</div><div class="v">${v}</div><div class="l">${sub}</div></div>`).join("");
+}
+
+function hourTotals(from, to) {  // {tool: [24]} over a day range
+  const out = {};
+  for (const [d, tools] of Object.entries(DATA.day_hours || {})) {
+    if (d < from || (to && d > to)) continue;
+    for (const [t, hours] of Object.entries(tools)) {
+      out[t] = out[t] || Array(24).fill(0);
+      hours.forEach((v, h) => out[t][h] += v);
+    }
+  }
+  return out;
+}
+
+function weekdayTotals(from, to) {  // {tool: [7]} Monday first
+  const out = {};
+  for (const [d, tools] of Object.entries(DATA.daily_tool)) {
+    if (d < from || (to && d > to)) continue;
+    const w = (new Date(d + "T12:00").getDay() + 6) % 7;
+    for (const [t, v] of Object.entries(tools)) { out[t] = out[t] || Array(7).fill(0); out[t][w] += v; }
+  }
+  return out;
+}
+
+const stackedBar = (id, labels, series) => new Chart(document.getElementById(id), {
+  type: "bar",
+  data: { labels, datasets: Object.entries(series).map(([t, data]) => ({ label: t, data, backgroundColor: COLORS[t], borderRadius: 3 })) },
+  options: { maintainAspectRatio: false, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, ticks: { callback: fmt } } },
+    plugins: { tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.raw.toLocaleString()}` } } } },
+});
+
+function timeCharts(from) {
+  hoursChart?.destroy();
+  hoursChart = stackedBar("hours", [...Array(24).keys()].map(hourLabel), hourTotals(from));
+  weekdaysChart?.destroy();
+  weekdaysChart = stackedBar("weekdays", WEEKDAYS, weekdayTotals(from));
+}
+
+function activityTotals(kinds, from, to) {  // [[name, tool, count]] sorted
+  const rows = [];
+  for (const kind of kinds)
+    for (const [key, days] of Object.entries((DATA.activity || {})[kind] || {})) {
+      const n = Object.entries(days).reduce((a, [d, c]) => a + (d >= from && (!to || d <= to) ? c : 0), 0);
+      const [name, tool] = key.split("|");
+      if (n) rows.push([kind === "skill" ? "skill: " + name : name, tool, n]);
+    }
+  return rows.sort((a, b) => b[2] - a[2]);
+}
+
+function blist(rows, max = 10, empty = "Nothing in this range.", f = n => n.toLocaleString()) {
+  if (!rows.length) return `<li class="muted">${empty}</li>`;
+  const top = rows[0][2];
+  return rows.slice(0, max).map(([name, tool, n]) => `<li title="${esc(name)} (${esc(tool)}): ${n.toLocaleString()}">
+    <div class="fill" style="width:${(n / top * 100).toFixed(1)}%;background:${COLORS[tool]}"></div>
+    <span>${esc(name)}</span><b>${f(n)}</b></li>`).join("") +
+    (rows.length > max ? `<li class="muted" style="font-size:12px">+ ${rows.length - max} more</li>` : "");
+}
+
+function activityLists(from) {
+  document.getElementById("b-tool").innerHTML = blist(activityTotals(["tool"], from));
+  document.getElementById("b-agent").innerHTML = blist(activityTotals(["agent", "skill"], from));
+  document.getElementById("b-mcp").innerHTML = blist(activityTotals(["mcp"], from));
+  document.getElementById("b-command").innerHTML = blist(activityTotals(["command"], from), 10, "No slash commands in this range.");
+}
+
+// --- year in review ---
+function yearReview(y) {
+  document.querySelectorAll("#yr-pick button").forEach(b => b.classList.toggle("on", b.dataset.y === y));
+  const from = y + "-01-01", to = y + "-12-31";
+  document.getElementById("yr-title").textContent = y === DATA.today.slice(0, 4) ? `${y} so far` : `${y} in review`;
+  const totals = sumDays(from, to);
+  const active = Object.keys(DATA.daily_tool).filter(d => d >= from && d <= to && DAY_TOTAL(d) > 0).sort();
+  const best = active.reduce((a, d) => DAY_TOTAL(d) > a[1] ? [d, DAY_TOTAL(d)] : a, ["", 0]);
+  const sum = arr => Object.values(arr).reduce((a, v) => a.map((x, i) => x + v[i]), Object.values(arr)[0]?.map(() => 0) || []);
+  const hours = sum(hourTotals(from, to)), wd = sum(weekdayTotals(from, to));
+  const peakHour = hours.length ? hours.indexOf(Math.max(...hours)) : -1;
+  const peakDay = wd.length ? wd.indexOf(Math.max(...wd)) : -1;
+  const calls = activityTotals(["tool"], from, to).reduce((a, r) => a + r[2], 0);
+  document.getElementById("yr-stats").innerHTML = [
+    ["Tokens", fmt(totals.total), totals.calls.toLocaleString() + " usage records"],
+    ...(DATA.has_pricing ? [["At API prices", money(totals.cost), "what this would cost on the API"]] : []),
+    ["Active days", String(active.length), active.length ? "since " + prettyDay(active[0]) : ""],
+    ["Longest streak", streaks(active).longest + " days", ""],
+    ["Busiest day", best[1] ? fmt(best[1]) : "—", best[0] ? prettyDay(best[0]) : ""],
+    ["Peak hour", peakHour >= 0 ? hourLabel(peakHour) : "—", peakDay >= 0 ? "busiest weekday " + WEEKDAYS[peakDay] : ""],
+    ["Tool calls", calls.toLocaleString(), ""],
+  ].map(([l, v, sub]) => `<div><div class="l">${l}</div><div class="v">${v}</div><div class="l">${sub}</div></div>`).join("");
+  const top = DATA.year_top?.[y] || {};
+  const split = rows => (rows || []).map(([k, v]) => [...k.split("|"), v]);
+  const lists = [
+    ["Top models (tokens)", split(top.model), fmt],
+    ["Top projects (tokens)", split(top.project), fmt],
+    ["Top tools (calls)", activityTotals(["tool"], from, to)],
+    ["Top subagents, skills, commands", activityTotals(["agent", "skill", "command"], from, to)],
+  ];
+  document.getElementById("yr-lists").innerHTML = lists.map(([title, rows, f]) =>
+    `<div><h2 style="font-size:13px">${title}</h2><ul class="blist">${blist(rows, 5, "Nothing this year.", f)}</ul></div>`).join("");
+}
+
+function years() {
+  const ys = [...new Set(Object.keys(DATA.daily_tool).map(d => d.slice(0, 4)))].sort().reverse();
+  const pick = document.getElementById("yr-pick");
+  pick.innerHTML = ys.length > 1 ? ys.map(y => `<button data-y="${y}">${y}</button>`).join("") : "";
+  pick.querySelectorAll("button").forEach(b => b.onclick = () => yearReview(b.dataset.y));
+  yearReview(ys[0] || DATA.today.slice(0, 4));
+}
+
+  function openaiAccount() {
+    const a = DATA.openai_analytics || {}, s = a.summary || {}, daily = a.daily;
+    const dates = Object.keys(daily || {}).sort();
+    const last = dates.at(-1);
+    document.getElementById('oa-status').textContent = a.error ||
+      `Live account report · checked ${new Date(a.as_of).toLocaleString()} · ${last ? 'latest reported day ' + last : 'daily history unavailable'}. Missing days are not assumed to be zero.`;
+    const value = (v, unit = '') => v == null ? 'Unavailable' : fmt(v) + unit;
+    const cards = [['Lifetime tokens', value(s.lifetimeTokens)], ['Peak daily tokens', value(s.peakDailyTokens)],
+      ['Current streak', value(s.currentStreakDays, ' days')], ['Longest streak', value(s.longestStreakDays, ' days')],
+      ['Longest turn', s.longestRunningTurnSec == null ? 'Unavailable' : (s.longestRunningTurnSec / 60).toFixed(1) + ' min'],
+      ['Latest reported day', last ? value(daily[last]) : 'Unavailable']];
+    document.getElementById('oa-summary').innerHTML = cards.map(([label, val]) =>
+      `<div class="kpi"><div class="l">${esc(label)}</div><div class="v">${esc(val)}</div></div>`).join('');
+    if (dates.length) new Chart(document.getElementById('oa-daily'), {
+      type: 'bar', data: {labels: dates, datasets: [{label: 'OpenAI account tokens', data: dates.map(d => daily[d]), backgroundColor: COLORS.Codex}]},
+      options: {maintainAspectRatio: false, scales: {y: {ticks: {callback: fmt}}}}
+    });
+    else document.getElementById('oa-daily').parentElement.style.display = 'none';
+    for (const [dim, id] of [['model', 'oa-models'], ['project', 'oa-projects']]) {
+      const rows = (DATA[dim] || []).filter(r => r.key.endsWith('|Codex')).sort((a,b) => b.total - a.total);
+      const total = rows.reduce((n,r) => n + r.total, 0);
+      document.getElementById(id).innerHTML = blist(rows.map(r =>
+        [r.key.slice(0,-6) + (total ? ` (${(100*r.total/total).toFixed(1)}%)` : ''), 'Codex', r.total]), 8, 'No local Codex usage.', fmt);
+    }
+  }
+  function toolStreaks(tool) {  // current and longest run of days with this tool's tokens
+    const days = Object.keys(DATA.daily_tool).filter(d => (DATA.daily_tool[d][tool] || 0) > 0).sort();
+    const active = new Set(days), d = new Date();
+    if (!active.has(iso(d))) d.setDate(d.getDate() - 1);
+    let current = 0;
+    while (active.has(iso(d))) { current++; d.setDate(d.getDate() - 1); }
+    return { current, longest: streaks(days).longest, days };
+  }
+
+  function claudeAccount() {
+    const tool = 'Claude Code';
+    const entry = (DATA.plan_limits || []).find(e => e.service === tool) || {};
+    const st = toolStreaks(tool), dates = st.days, last = dates.at(-1);
+    const per = d => DATA.daily_tool[d][tool] || 0;
+    const peak = dates.reduce((a, d) => per(d) > a[1] ? [d, per(d)] : a, ['', 0]);
+    const lifetime = (DATA.tool.find(t => t.key === tool) || {}).total;
+    const turn = (DATA.longest_turn_ms || {})[tool];
+    const checked = entry.as_of ? ` · weekly split ${entry.source === 'live' ? 'checked' : 'last checked'} ${new Date(entry.as_of).toLocaleString()}` : '';
+    document.getElementById('ca-status').textContent = (entry.error ? entry.error + ' · ' : '') +
+      `Local Claude Code logs · ${last ? 'latest active day ' + last : 'no local activity yet'}${checked}.`;
+    const value = (v, unit = '') => v == null ? 'Unavailable' : fmt(v) + unit;
+    const cards = [['Lifetime tokens (this PC)', value(lifetime)], ['Peak daily tokens', peak[1] ? fmt(peak[1]) : 'Unavailable'],
+      ['Current streak', st.current + ' days'], ['Longest streak', st.longest + ' days'],
+      ['Longest turn', turn == null ? 'Unavailable' : (turn / 60000).toFixed(1) + ' min'],
+      ['Latest active day', last ? fmt(per(last)) : 'Unavailable']];
+    document.getElementById('ca-summary').innerHTML = cards.map(([label, val]) =>
+      `<div class="kpi"><div class="l">${esc(label)}</div><div class="v">${esc(val)}</div></div>`).join('');
+    const surfaces = (entry.breakdown || []).filter(r => r.percent != null).sort((a, b) => b.percent - a.percent);
+    document.getElementById('ca-surfaces').innerHTML = blist(surfaces.map(r =>
+      [r.name || String(r.key).replace(/_/g, ' '), tool, r.percent]), 6, 'No weekly split reported yet.', n => n + '%');
+    const spend = entry.spend;
+    document.getElementById('ca-spend').innerHTML = spend
+      ? `<span style="font-size:20px;font-weight:650">${esc(spend.used.toLocaleString(undefined, { style: 'currency', currency: spend.currency || 'USD' }))}</span> <span class="muted">used this period</span>`
+      : '<span class="muted">Extra usage is off or not reported for this account.</span>';
+    if (dates.length) {
+      const all = [];
+      for (const d = new Date(dates[0] + 'T12:00'); iso(d) <= DATA.today; d.setDate(d.getDate() + 1)) all.push(iso(d));
+      new Chart(document.getElementById('ca-daily'), {
+        type: 'bar', data: {labels: all, datasets: [{label: 'Claude Code tokens (this PC)', data: all.map(d => (DATA.daily_tool[d] || {})[tool] || 0), backgroundColor: COLORS[tool]}]},
+        options: {maintainAspectRatio: false, scales: {y: {ticks: {callback: fmt}}}}
+      });
+    } else document.getElementById('ca-daily').parentElement.style.display = 'none';
+    for (const [dim, id] of [['model', 'ca-models'], ['project', 'ca-projects']]) {
+      const rows = (DATA[dim] || []).filter(r => r.key.endsWith('|' + tool)).sort((a, b) => b.total - a.total);
+      const total = rows.reduce((n, r) => n + r.total, 0);
+      document.getElementById(id).innerHTML = blist(rows.map(r =>
+        [r.key.slice(0, -(tool.length + 1)) + (total ? ` (${(100 * r.total / total).toFixed(1)}%)` : ''), tool, r.total]), 8, 'No local Claude Code usage.', fmt);
+    }
+  }
+  claudeAccount();
+  openaiAccount();
+  heatmap();
+years();
+table("t-model", DATA.model);
+table("t-project", DATA.project);
+const pickRange = b => {
+  document.querySelectorAll("#range button").forEach(x => x.classList.toggle("on", x === b));
+  charts(+b.dataset.d);
+};
+document.querySelectorAll("#range button").forEach(b => b.onclick = () => {
+  pickRange(b);
+  try { localStorage.setItem("range", b.dataset.d); } catch (e) {}  // survives the auto-reload
+});
+let saved = null;
+try { saved = localStorage.getItem("range"); } catch (e) {}
+pickRange(document.querySelector(`#range button[data-d="${saved}"]`) || document.querySelector('#range button[data-d="30"]'));
+document.getElementById("note").textContent = "Token totals cover local Codex sessions and archives, including subagents. Forked history is counted once. Reasoning is already part of output. Usage records are logged updates, not an exact request count. Plan percentages and credits are separate service readings and cannot be inferred from tokens. Cloud-only activity and other PCs may be absent. " + (DATA.has_pricing
+  ? "API-equivalent cost uses the per-million-token rates in pricing.json; models without a rate show —."
+  : "Add per-million-token rates to pricing.json to see what this usage would cost at API prices.") + " " + (DATA.warnings || []).join(" ");
+</script>
+</body>
+</html>

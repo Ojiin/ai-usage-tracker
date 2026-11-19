@@ -11,6 +11,33 @@
         "tracker"
       ],
       "switch": "RUST_ANYTHING_UNIT_TRACKER"
+    },
+    {
+      "name": "limits-watch",
+      "crate": "limits-watch-rs",
+      "path": "../limits-watch-rs",
+      "commands": [
+        "unit-limits-watch"
+      ],
+      "switch": "RUST_ANYTHING_UNIT_LIMITS_WATCH"
+    },
+    {
+      "name": "api-billing",
+      "crate": "api-billing-rs",
+      "path": "../api-billing-rs",
+      "commands": [
+        "unit-api-billing"
+      ],
+      "switch": "RUST_ANYTHING_UNIT_API_BILLING"
+    },
+    {
+      "name": "openai-analytics",
+      "crate": "openai-analytics-rs",
+      "path": "../openai-analytics-rs",
+      "commands": [
+        "unit-openai-analytics"
+      ],
+      "switch": "RUST_ANYTHING_UNIT_OPENAI_ANALYTICS"
     }
   ]
 }
