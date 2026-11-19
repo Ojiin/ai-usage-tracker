@@ -162,3 +162,54 @@ pub fn to_float(v: &Value) -> Result<f64, String> {
         )),
     }
 }
+
+/// Python's `repr(v)`: `None`, `True`, `1e+21`, `'text'`, `['a', 1]`, `{'k': 'v'}`. Floats the
+/// bridge passes as `{"$num": "NaN"}` print as Python prints them.
+pub fn py_repr(v: &Value) -> String {
+    let items = |a: &mut dyn Iterator<Item = String>| a.collect::<Vec<_>>().join(", ");
+    match v {
+        Value::String(s) => {
+            let quote = if s.contains('\'') && !s.contains('"') {
+                '"'
+            } else {
+                '\''
+            };
+            let mut out = String::from(quote);
+            for c in s.chars() {
+                match c {
+                    '\\' => out.push_str("\\\\"),
+                    '\n' => out.push_str("\\n"),
+                    '\r' => out.push_str("\\r"),
+                    '\t' => out.push_str("\\t"),
+                    c if c == quote => out.extend(['\\', c]),
+                    c => out.push(c),
+                }
+            }
+            out.push(quote);
+            out
+        }
+        Value::Number(n) if n.is_f64() => {
+            let text = format!("{:?}", n.as_f64().unwrap_or_default());
+            match text.split_once('e') {
+                Some((mantissa, exp)) => {
+                    let (sign, digits) = exp.strip_prefix('-').map_or(('+', exp), |d| ('-', d));
+                    format!("{mantissa}e{sign}{digits:0>2}")
+                }
+                None => text,
+            }
+        }
+        Value::Array(a) => format!("[{}]", items(&mut a.iter().map(py_repr))),
+        Value::Object(m) => match m.get("$num").and_then(Value::as_str) {
+            Some(special) => special
+                .replace("Infinity", "inf")
+                .replace("NaN", "nan")
+                .replace("-0", "-0.0"),
+            None => {
+                let pair =
+                    |(k, v): (&String, &Value)| format!("{}: {}", py_repr(&json!(k)), py_repr(v));
+                format!("{{{}}}", items(&mut m.iter().map(pair)))
+            }
+        },
+        scalar => py_str(scalar),
+    }
+}
