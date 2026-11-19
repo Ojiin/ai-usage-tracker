@@ -7,7 +7,7 @@
 #![forbid(unsafe_code)]
 
 use crate::pynum::Num;
-pub use native::{record_and_project_at, store};
+pub use native::{due_alerts, pace_text, record_and_project_at, store};
 use pycompat::{dumps, get, iso_micros, iter, py_str, round_to, to_float, truthy, ty};
 use serde_json::{Map, Value, json};
 use std::cmp::Ordering;
@@ -25,6 +25,7 @@ const KEEP_SECONDS: f64 = 8.0 * 86400.0; // weekly windows need a week of sample
 const SAME_WINDOW: f64 = 15.0 * 60.0; // resets_at jitter between polls of the same window
 const MIN_SPAN: f64 = 10.0 * 60.0; // least time between samples to trust a rate
 const MAX_AGE: f64 = 30.0 * 60.0; // no projection from a reading older than this
+const THRESHOLDS: [i64; 3] = [80, 95, 100];
 
 /// Port of `to_epoch` (`limits_watch.py:23`): whole seconds, or `None` for anything unreadable.
 pub fn to_epoch(iso: serde_json::Value) -> Result<Option<i64>, String> {
@@ -188,16 +189,25 @@ pub mod native {
             .join("AIUsageTracker")
     }
 
+    /// The JSON object saved at `path`; empty when the file is missing or unreadable.
+    fn load(path: &Path) -> Map<String, Value> {
+        let text = std::fs::read_to_string(path).ok();
+        match text.and_then(|text| serde_json::from_str(&text).ok()) {
+            Some(Value::Object(map)) => map,
+            _ => Map::new(),
+        }
+    }
+
+    /// Like the original, a file that cannot be written is not an error.
+    fn save(path: &Path, data: &Map<String, Value>) {
+        let folder = path.parent().map_or(Ok(()), std::fs::create_dir_all);
+        let _ = folder.and_then(|()| std::fs::write(path, dumps(&Value::Object(data.clone()))));
+    }
+
     /// Saves this scan's readings in the history at `path` and sets `w["projection"]` on each
     /// window of a live entry that has a reliable pace.
     pub fn record_and_project_at(entries: &mut Value, now: Num, path: &Path) -> Result<(), String> {
-        let loaded = std::fs::read_to_string(path)
-            .ok()
-            .and_then(|text| serde_json::from_str(&text).ok());
-        let mut history = match loaded {
-            Some(Value::Object(map)) => map,
-            _ => Map::new(),
-        };
+        let mut history = load(path);
         for entry in iter(entries)? {
             for w in windows(&entry)? {
                 let as_of = get(&w, "as_of")?
@@ -225,12 +235,7 @@ pub mod native {
             *samples = Value::Array(kept);
             samples.as_array().is_some_and(|kept| !kept.is_empty())
         });
-        let text = dumps(&Value::Object(history.clone()));
-        // Like the original, a history that cannot be written is not an error.
-        let _ = path
-            .parent()
-            .map_or(Ok(()), std::fs::create_dir_all)
-            .and_then(|()| std::fs::write(path, text));
+        save(path, &history);
         for entry in entries.as_array_mut().into_iter().flatten() {
             let (live, service) = (entry.get("source") == Some(&json!("live")), entry.clone());
             for w in entry
@@ -257,6 +262,97 @@ pub mod native {
             }
         }
         Ok(())
+    }
+    /// Port of `pace_text` (`limits_watch.py:116`).
+    pub fn pace_text(projection: Option<&Value>, fmt_time: &dyn Fn(i64) -> String) -> String {
+        let Some(p) = projection.filter(|p| truthy(p)) else {
+            return String::new();
+        };
+        match p.get("hits_at") {
+            Some(at) => format!(
+                "At this pace: 100% by {}",
+                fmt_time(at.as_i64().unwrap_or_default())
+            ),
+            None => format!(
+                "On pace for ~{:.0}% by reset",
+                p["at_reset"].as_f64().unwrap_or_default()
+            ),
+        }
+    }
+
+    /// Port of `due_alerts` (`limits_watch.py:124`): `(title, text)` for each threshold crossed
+    /// since the last call, once per window. Only fresh live readings count.
+    pub fn due_alerts(
+        entries: &Value,
+        now: f64,
+        path: &Path,
+        fmt_time: &dyn Fn(i64) -> String,
+    ) -> Vec<(String, String)> {
+        let (mut state, mut alerts) = (load(path), Vec::new());
+        for entry in entries.as_array().into_iter().flatten() {
+            if entry.get("source") != Some(&json!("live")) || entry.get("error").is_some_and(truthy)
+            {
+                continue;
+            }
+            for w in entry
+                .get("windows")
+                .and_then(Value::as_array)
+                .into_iter()
+                .flatten()
+            {
+                let (Some(reset), Ok(key)) = (
+                    w.get("resets_at").filter(|r| truthy(r)),
+                    window_key(entry.clone(), w.clone()),
+                ) else {
+                    continue;
+                };
+                let (reset_f, pct) = (
+                    reset.as_f64().unwrap_or_default(),
+                    w.get("used_percent")
+                        .and_then(Value::as_f64)
+                        .unwrap_or_default(),
+                );
+                if reset_f <= now {
+                    continue;
+                }
+                let seen = state.get(&key);
+                let same = same_window(seen.and_then(|s| s["resets_at"].as_f64()), Some(reset_f))
+                    == Ok(true);
+                let mut level = seen
+                    .filter(|_| same)
+                    .and_then(|s| s["level"].as_i64())
+                    .unwrap_or_default();
+                if let Some(top) = THRESHOLDS
+                    .iter()
+                    .copied()
+                    .rfind(|&t| level < t && t as f64 <= pct)
+                {
+                    let (service, at) = (py_str(&entry["service"]), fmt_time(reset_f as i64));
+                    let label = w.get("label").map_or_else(|| "limit".to_string(), py_str);
+                    let pace = pace_text(w.get("projection"), fmt_time);
+                    alerts.push(if top >= 100 {
+                        (
+                            format!("{service} limit reached"),
+                            format!("{label} limit reached. Resets {at}."),
+                        )
+                    } else if pace.is_empty() {
+                        (
+                            format!("{service} {top}% used"),
+                            format!("{label} at {pct:.0}%. Resets {at}."),
+                        )
+                    } else {
+                        (
+                            format!("{service} {top}% used"),
+                            format!("{label} at {pct:.0}%. {pace}; resets {at}."),
+                        )
+                    });
+                    level = top;
+                }
+                state.insert(key, json!({"resets_at": reset, "level": level}));
+            }
+        }
+        save(path, &state);
+        alerts
     }
 }
 
@@ -337,6 +433,46 @@ mod tests {
             NOW - 1800
         );
         assert_eq!(saved, Ok(expected));
+        let _ = std::fs::remove_dir_all(dir);
+    }
+    #[test]
+    fn alerts_fire_once_per_threshold_and_window() {
+        let dir =
+            std::env::temp_dir().join(format!("limits-watch-rs-alerts-{}", std::process::id()));
+        let path = dir.join("alerts.json");
+        let entry = |pct: i64, reset: i64, source: &str, extra: Value| {
+            let mut w = json!({"label": "5-hour session", "used_percent": pct, "resets_at": reset});
+            w.as_object_mut()
+                .into_iter()
+                .for_each(|m| m.extend(extra.as_object().cloned().unwrap_or_default()));
+            json!([{"service": "Claude Code", "source": source, "windows": [w]}])
+        };
+        let titles = |entries: Value, now: i64| -> Vec<String> {
+            let fired = due_alerts(&entries, now as f64, &path, &|_| "T".into());
+            fired
+                .into_iter()
+                .map(|(title, text)| format!("{title}: {text}"))
+                .collect()
+        };
+        let none: Vec<String> = Vec::new();
+        assert_eq!(titles(entry(50, RESET, "live", json!({})), NOW), none);
+        let pace = json!({"projection": {"pct": 82, "rate_per_hour": 20, "hits_at": NOW + 3240}});
+        let with_pace =
+            "Claude Code 80% used: 5-hour session at 82%. At this pace: 100% by T; resets T.";
+        assert_eq!(titles(entry(82, RESET, "live", pace), NOW), [with_pace]);
+        assert_eq!(titles(entry(85, RESET, "live", json!({})), NOW), none);
+        let reached = "Claude Code limit reached: 5-hour session limit reached. Resets T.";
+        assert_eq!(titles(entry(100, RESET, "live", json!({})), NOW), [reached]);
+        let next = "Claude Code 80% used: 5-hour session at 81%. Resets T.";
+        assert_eq!(
+            titles(entry(81, RESET + 5 * 3600, "live", json!({})), RESET + 60),
+            [next]
+        );
+        assert_eq!(
+            titles(entry(99, RESET + 40 * 3600, "cached", json!({})), NOW),
+            none
+        );
+        assert_eq!(titles(entry(99, NOW - 10, "live", json!({})), NOW), none);
         let _ = std::fs::remove_dir_all(dir);
     }
 }
