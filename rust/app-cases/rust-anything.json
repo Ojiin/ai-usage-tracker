@@ -1,0 +1,15 @@
+{
+  "schema": "rust-anything/app-cases@1",
+  "name": "tracker",
+  "run": [
+    "python3",
+    "tracker.py"
+  ],
+  "normalizers": {
+    "generated": "\"generated\": \"[0-9: -]+\"",
+    "now_epoch": "\"now_epoch\": \\d+",
+    "prog": "tracker\\.py",
+    "set_at": "\"set_at\": [0-9.]+"
+  },
+  "timeout_secs": 30
+}

@@ -1,0 +1,8 @@
+bin.name = "tracker"
+args = ["--set-balance", "openai", "clear", "--no-open", "--out", "d.html"]
+env.add.HOME = "/tmp/claude-0/-home-user/8a6472d7-54c0-5bdf-98dc-3b50364d0768/scratchpad/home-app"
+env.add.LOCALAPPDATA = "/tmp/claude-0/-home-user/8a6472d7-54c0-5bdf-98dc-3b50364d0768/scratchpad/home-app/store-set-balance-clear"
+env.add.TZ = "UTC"
+env.add.AI_USAGE_TRACKER_DIR = "/home/user/ai-usage-tracker"
+status.code = 0
+fs.sandbox = true

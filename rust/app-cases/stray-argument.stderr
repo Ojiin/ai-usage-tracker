@@ -1,0 +1,2 @@
+usage: [..] [-h] [--out OUT] [--no-open] [--set-balance PROVIDER USD]
+[..]: error: unrecognized arguments: extra

@@ -1,0 +1,12 @@
+usage: [..] [-h] [--out OUT] [--no-open] [--set-balance PROVIDER USD]
+
+AI usage tracker: scans local Claude Code and Codex logs, checks live plan
+limits, writes an HTML dashboard.
+
+options:
+  -h, --help            show this help message and exit
+  --out OUT
+  --no-open             don't open the dashboard in the browser
+  --set-balance PROVIDER USD
+                        record your current API credit balance, e.g. --set-
+                        balance anthropic 25.00 (use 'clear' to remove)
