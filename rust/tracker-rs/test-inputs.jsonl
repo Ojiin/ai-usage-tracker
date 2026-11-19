@@ -1,0 +1,68 @@
+{"fn": "scan_codex", "args": []}
+{"fn": "to_epoch", "args": ["2026-11-01T10:01:00Z"]}
+{"fn": "local_time", "args": ["2026-11-01T10:01:00Z"]}
+{"fn": "codex_live", "args": []}
+{"fn": "aggregate", "args": [[{"tool": "Codex", "day": "2026-11-01", "hour": 10, "dow": 6, "model": "unknown", "project": "demo", "session": "s", "input": 30, "cache_write": 0, "cache_read": 20, "output": 10, "reasoning": 5}], {}]}
+{"fn": "cost_of", "args": [{"tool": "Codex", "day": "2026-11-01", "hour": 10, "dow": 6, "model": "unknown", "project": "demo", "session": "s", "input": 30, "cache_write": 0, "cache_read": 20, "output": 10, "reasoning": 5}, {}]}
+{"fn": "to_epoch", "args": ["2026-11-01T10:00:00Z"]}
+{"fn": "to_epoch", "args": ["2026-11-01T09:59:59.999Z"]}
+{"fn": "window_label", "args": [15]}
+{"fn": "pretty_plan", "args": ["business"]}
+{"fn": "codex_details", "args": [{"plan_type": "business", "rate_limit": {"primary_window": {"used_percent": 30, "limit_window_seconds": 900, "reset_at": 1793540000}}, "code_review_rate_limit": {"primary_window": {"used_percent": 30, "limit_window_seconds": 900, "reset_at": 1793540000}}, "credits": {"balance": "42.5"}, "spend_control_reached": true}]}
+{"fn": "codex_log_limits", "args": [{"codex": {"limit_id": "codex", "primary": {"used_percent": 24, "window_minutes": 10080}, "timestamp": "2026-11-01T10:01:00Z"}, "spark": {"limit_id": "spark", "primary": {"used_percent": 12, "window_minutes": 15}, "timestamp": "2026-11-01T10:01:00Z"}}]}
+{"fn": "window_label", "args": [10080]}
+{"fn": "pretty_plan", "args": [null]}
+{"fn": "codex_details", "args": [{"limit_id": "codex", "primary": {"used_percent": 24, "window_minutes": 10080}, "timestamp": "2026-11-01T10:01:00Z"}]}
+{"fn": "to_epoch", "args": ["2026-11-01T10:02:00Z"]}
+{"fn": "local_time", "args": ["2026-11-01T10:02:00Z"]}
+{"fn": "aggregate", "args": [[{"tool": "Claude Code", "model": "claude-opus-5-5", "day": "2026-11-01", "project": "p", "session": "s", "input": 1000000, "cache_write": 0, "cache_read": 2000000, "output": 100000}, {"tool": "Claude Code", "model": "claude-opus-5-5", "day": "2026-11-01", "project": "p", "session": "s", "input": 1000000, "cache_write": 0, "cache_read": 2000000, "output": 100000}, {"tool": "Codex", "model": "mystery-model", "day": "2026-11-01", "project": "p", "session": "s", "input": 1000000, "cache_write": 0, "cache_read": 2000000, "output": 100000}], {"claude-opus-5-5": {"input": 4, "cache_write": 8, "cache_read": 0.2, "output": 20}}]}
+{"fn": "cost_of", "args": [{"tool": "Claude Code", "model": "claude-opus-5-5", "day": "2026-11-01", "project": "p", "session": "s", "input": 1000000, "cache_write": 0, "cache_read": 2000000, "output": 100000}, {"claude-opus-5-5": {"input": 4, "cache_write": 8, "cache_read": 0.2, "output": 20}}]}
+{"fn": "cost_of", "args": [{"tool": "Codex", "model": "mystery-model", "day": "2026-11-01", "project": "p", "session": "s", "input": 1000000, "cache_write": 0, "cache_read": 2000000, "output": 100000}, {"claude-opus-5-5": {"input": 4, "cache_write": 8, "cache_read": 0.2, "output": 20}}]}
+{"fn": "local_time", "args": ["2026-11-01T10:00:00Z"]}
+{"fn": "aggregate", "args": [[{"tool": "Claude Code", "day": "2026-11-01", "hour": 10, "dow": 6, "model": "m", "project": "p", "session": "s", "input": 10, "cache_write": 0, "cache_read": 0, "output": 5}, {"tool": "Claude Code", "day": "2026-11-01", "hour": 10, "dow": 6, "model": "m", "project": "p", "session": "s", "input": 10, "cache_write": 0, "cache_read": 0, "output": 5}], {}, [{"tool": "Codex", "day": "2026-11-01", "kind": "tool", "name": "exec"}, {"tool": "Codex", "day": "2026-11-01", "kind": "tool", "name": "exec"}, {"tool": "Codex", "day": "2026-11-01", "kind": "tool", "name": "exec"}]]}
+{"fn": "cost_of", "args": [{"tool": "Claude Code", "day": "2026-11-01", "hour": 10, "dow": 6, "model": "m", "project": "p", "session": "s", "input": 10, "cache_write": 0, "cache_read": 0, "output": 5}, {}]}
+{"fn": "claude_live", "args": []}
+{"fn": "to_epoch", "args": ["2026-11-03T00:00:00Z"]}
+{"fn": "scan_claude", "args": [[]]}
+{"fn": "local_day", "args": ["2026-11-01T10:00:00Z"]}
+{"fn": "claude_tool_events", "args": ["Bash", {"command": "ls"}]}
+{"fn": "claude_tool_events", "args": ["Agent", {"subagent_type": "Explore"}]}
+{"fn": "claude_tool_events", "args": ["Task", {}]}
+{"fn": "claude_tool_events", "args": ["Skill", {"skill": "pdf"}]}
+{"fn": "claude_tool_events", "args": ["mcp__rea__open_binary", {}]}
+{"fn": "scan_claude", "args": []}
+{"fn": "scan_codex", "args": [[]]}
+{"fn": "local_day", "args": ["2026-11-01T10:05:00Z"]}
+{"fn": "to_epoch", "args": ["2026-11-01T10:05:00Z"]}
+{"fn": "local_day", "args": ["2026-11-01T10:06:00Z"]}
+{"fn": "to_epoch", "args": ["2026-11-01T10:06:00Z"]}
+{"fn": "working_now", "args": []}
+{"fn": "working_details", "args": [120, null]}
+{"fn": "codex_db_working", "args": [1795121026.370133]}
+{"fn": "codex_db", "args": ["state"]}
+{"fn": "codex_db", "args": ["thread_history"]}
+{"fn": "short_text", "args": ["find the bugs"]}
+{"fn": "short_text", "args": ["check the exporter"]}
+{"fn": "working_details", "args": []}
+{"fn": "codex_db_working", "args": [1795121026.371503]}
+{"fn": "describe_session", "args": [{"tool": "Codex", "model": "gpt-6-astra", "effort": "ultra", "project": "photo", "title": "Review Photul", "task": "find the bugs", "age": 0, "subagents": [{"type": "Faraday (subagent)", "description": "check the exporter", "model": "gpt-6-astra", "effort": "high", "age": 0, "project": "photo"}]}]}
+{"fn": "pretty_model", "args": ["gpt-6-astra"]}
+{"fn": "aggregate", "args": [[{"tool": "Claude Code", "day": "2026-11-01", "hour": 10, "dow": 6, "model": "claude-opus-5-5", "project": "demo", "session": "s1", "input": 10, "cache_write": 0, "cache_read": 0, "output": 5}], {}, [{"tool": "Claude Code", "day": "2026-11-01", "kind": "turn", "ms": 90000}, {"tool": "Claude Code", "day": "2026-11-01", "kind": "turn", "ms": 30000}]]}
+{"fn": "cost_of", "args": [{"tool": "Claude Code", "day": "2026-11-01", "hour": 10, "dow": 6, "model": "claude-opus-5-5", "project": "demo", "session": "s1", "input": 10, "cache_write": 0, "cache_read": 0, "output": 5}, {}]}
+{"fn": "scan_commands", "args": [[]]}
+{"fn": "pretty_model", "args": ["claude-opus-5-5"]}
+{"fn": "pretty_model", "args": ["claude-sonnet-5"]}
+{"fn": "pretty_model", "args": ["gpt-6.1-sol"]}
+{"fn": "codex_db_working", "args": [1795121026.438985]}
+{"fn": "claude_session_info", "args": [{"$repr": "PosixPath"}]}
+{"fn": "tail_rows", "args": [{"$repr": "PosixPath"}]}
+{"fn": "short_text", "args": ["add a hover card"]}
+{"fn": "short_text", "args": ["find the widget code", 70]}
+{"fn": "codex_titles", "args": []}
+{"fn": "codex_session_info", "args": [{"$repr": "PosixPath"}, {"p-1": "Speed up import"}]}
+{"fn": "describe_session", "args": [{"tool": "Claude Code", "model": "claude-opus-5-5", "effort": "medium", "project": "demo", "title": "Usage tracker", "task": "add a hover card", "age": 0, "subagents": [{"type": "Explore agent", "description": "find the widget code", "model": "claude-opus-5-5", "effort": null, "age": 0}]}]}
+{"fn": "describe_session", "args": [{"tool": "Codex", "model": "gpt-6.1-sol", "effort": "high", "project": "demo", "title": "Speed up import", "task": null, "age": 0, "subagents": [{"type": "Ada (subagent)", "description": null, "model": "gpt-6.1-sol", "effort": "medium", "age": 0, "project": null}]}]}
+{"fn": "codex_db_working", "args": [1795121026.440319]}
+{"fn": "codex_db_working", "args": [1795121026.467165]}
+{"fn": "short_text", "args": [null, 70]}
+{"fn": "codex_session_info", "args": [{"$repr": "PosixPath"}, {}]}

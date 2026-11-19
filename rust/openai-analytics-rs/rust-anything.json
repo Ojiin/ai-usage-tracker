@@ -1,0 +1,67 @@
+{
+  "schema": "rust-anything/bridge@1",
+  "root": "/home/user/ai-usage-tracker",
+  "unit": "openai_analytics.py",
+  "language": "python",
+  "kind": "pyo3",
+  "crate_name": "openai-analytics-rs",
+  "exports": [
+    {
+      "name": "codex_executable",
+      "file": "openai_analytics.py",
+      "line": 13,
+      "params": [],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "read_account",
+      "file": "openai_analytics.py",
+      "line": 22,
+      "params": [
+        {
+          "name": "timeout",
+          "ts_type": "int",
+          "optional": true,
+          "rest": false,
+          "default": "25"
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "normalize",
+      "file": "openai_analytics.py",
+      "line": 81,
+      "params": [
+        {
+          "name": "body",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    }
+  ],
+  "classes": [],
+  "js_only": [
+    {
+      "name": "collect",
+      "file": "openai_analytics.py",
+      "line": 102,
+      "reason": "calls its parameter `log`: a callable"
+    }
+  ]
+}

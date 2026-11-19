@@ -1,0 +1,641 @@
+{
+  "schema": "rust-anything/bridge@1",
+  "root": "/home/user/ai-usage-tracker",
+  "unit": "tracker.py",
+  "language": "python",
+  "kind": "pyo3",
+  "crate_name": "tracker-rs",
+  "exports": [
+    {
+      "name": "local_day",
+      "file": "tracker.py",
+      "line": 42,
+      "params": [
+        {
+          "name": "ts",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "local_time",
+      "file": "tracker.py",
+      "line": 53,
+      "params": [
+        {
+          "name": "ts",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "claude_tool_events",
+      "file": "tracker.py",
+      "line": 62,
+      "params": [
+        {
+          "name": "name",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        },
+        {
+          "name": "args",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "scan_commands",
+      "file": "tracker.py",
+      "line": 78,
+      "params": [
+        {
+          "name": "events",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "working_now",
+      "file": "tracker.py",
+      "line": 96,
+      "params": [
+        {
+          "name": "window",
+          "ts_type": "int",
+          "optional": true,
+          "rest": false,
+          "default": "120"
+        },
+        {
+          "name": "now",
+          "ts_type": "unknown",
+          "optional": true,
+          "rest": false,
+          "default": "None"
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "tail_rows",
+      "file": "tracker.py",
+      "line": 104,
+      "params": [
+        {
+          "name": "path",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        },
+        {
+          "name": "size",
+          "ts_type": "unknown",
+          "optional": true,
+          "rest": false,
+          "default": "512 * 1024"
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "pretty_model",
+      "file": "tracker.py",
+      "line": 125,
+      "params": [
+        {
+          "name": "model",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "short_text",
+      "file": "tracker.py",
+      "line": 138,
+      "params": [
+        {
+          "name": "text",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        },
+        {
+          "name": "limit",
+          "ts_type": "int",
+          "optional": true,
+          "rest": false,
+          "default": "90"
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "codex_titles",
+      "file": "tracker.py",
+      "line": 143,
+      "params": [],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "codex_db",
+      "file": "tracker.py",
+      "line": 154,
+      "params": [
+        {
+          "name": "prefix",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "codex_db_working",
+      "file": "tracker.py",
+      "line": 168,
+      "params": [
+        {
+          "name": "now",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "claude_session_info",
+      "file": "tracker.py",
+      "line": 216,
+      "params": [
+        {
+          "name": "path",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "codex_session_info",
+      "file": "tracker.py",
+      "line": 234,
+      "params": [
+        {
+          "name": "path",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        },
+        {
+          "name": "titles",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "working_details",
+      "file": "tracker.py",
+      "line": 264,
+      "params": [
+        {
+          "name": "window",
+          "ts_type": "int",
+          "optional": true,
+          "rest": false,
+          "default": "120"
+        },
+        {
+          "name": "now",
+          "ts_type": "unknown",
+          "optional": true,
+          "rest": false,
+          "default": "None"
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "describe_session",
+      "file": "tracker.py",
+      "line": 327,
+      "params": [
+        {
+          "name": "info",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "scan_claude",
+      "file": "tracker.py",
+      "line": 366,
+      "params": [
+        {
+          "name": "events",
+          "ts_type": "unknown",
+          "optional": true,
+          "rest": false,
+          "default": "None"
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "scan_codex",
+      "file": "tracker.py",
+      "line": 418,
+      "params": [
+        {
+          "name": "events",
+          "ts_type": "unknown",
+          "optional": true,
+          "rest": false,
+          "default": "None"
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "utc_now_iso",
+      "file": "tracker.py",
+      "line": 521,
+      "params": [],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "to_epoch",
+      "file": "tracker.py",
+      "line": 525,
+      "params": [
+        {
+          "name": "iso",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "pretty_plan",
+      "file": "tracker.py",
+      "line": 532,
+      "params": [
+        {
+          "name": "raw",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "window_label",
+      "file": "tracker.py",
+      "line": 536,
+      "params": [
+        {
+          "name": "minutes",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "get_json",
+      "file": "tracker.py",
+      "line": 544,
+      "params": [
+        {
+          "name": "url",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        },
+        {
+          "name": "headers",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        },
+        {
+          "name": "app",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "codex_live",
+      "file": "tracker.py",
+      "line": 557,
+      "params": [],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "codex_details",
+      "file": "tracker.py",
+      "line": 593,
+      "params": [
+        {
+          "name": "body",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "claude_live",
+      "file": "tracker.py",
+      "line": 613,
+      "params": [],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "codex_log_limits",
+      "file": "tracker.py",
+      "line": 650,
+      "params": [
+        {
+          "name": "snapshot",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "load_pricing",
+      "file": "tracker.py",
+      "line": 694,
+      "params": [],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "cost_of",
+      "file": "tracker.py",
+      "line": 702,
+      "params": [
+        {
+          "name": "rec",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        },
+        {
+          "name": "pricing",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "aggregate",
+      "file": "tracker.py",
+      "line": 709,
+      "params": [
+        {
+          "name": "records",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        },
+        {
+          "name": "pricing",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        },
+        {
+          "name": "events",
+          "ts_type": "unknown",
+          "optional": true,
+          "rest": false,
+          "default": "()"
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "write_dashboard",
+      "file": "tracker.py",
+      "line": 795,
+      "params": [
+        {
+          "name": "data",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        },
+        {
+          "name": "out_path",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "build",
+      "file": "tracker.py",
+      "line": 800,
+      "params": [
+        {
+          "name": "out_path",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    }
+  ],
+  "classes": [],
+  "js_only": [
+    {
+      "name": "iter_jsonl",
+      "file": "tracker.py",
+      "line": 345,
+      "reason": "generator: returns a lazy iterator"
+    },
+    {
+      "name": "plan_limits",
+      "file": "tracker.py",
+      "line": 669,
+      "reason": "calls its parameter `log`: a callable"
+    },
+    {
+      "name": "collect",
+      "file": "tracker.py",
+      "line": 771,
+      "reason": "calls its parameter `log`: a callable"
+    },
+    {
+      "name": "main",
+      "file": "tracker.py",
+      "line": 805,
+      "reason": "a command-line entry point: it stays in Python, and `app front-door` takes the command line over when the whole app moves"
+    }
+  ]
+}

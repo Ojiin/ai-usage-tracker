@@ -1,0 +1,35 @@
+{"fn": "codex_executable", "args": [], "ok": null}
+{"fn": "read_account", "args": [7], "error": "RuntimeError: Codex app-server was not found. Open the Codex app or install the Codex CLI."}
+{"fn": "read_account", "args": [1], "error": "RuntimeError: Codex app-server was not found. Open the Codex app or install the Codex CLI."}
+{"fn": "read_account", "args": [42], "error": "RuntimeError: Codex app-server was not found. Open the Codex app or install the Codex CLI."}
+{"fn": "read_account", "args": [2147483647], "error": "RuntimeError: Codex app-server was not found. Open the Codex app or install the Codex CLI."}
+{"fn": "read_account", "args": [{"$undefined": true}], "error": "RuntimeError: Codex app-server was not found. Open the Codex app or install the Codex CLI."}
+{"fn": "read_account", "args": [-100], "error": "RuntimeError: Codex app-server was not found. Open the Codex app or install the Codex CLI."}
+{"fn": "read_account", "args": [2], "error": "RuntimeError: Codex app-server was not found. Open the Codex app or install the Codex CLI."}
+{"fn": "read_account", "args": [0], "error": "RuntimeError: Codex app-server was not found. Open the Codex app or install the Codex CLI."}
+{"fn": "read_account", "args": [-2147483648], "error": "RuntimeError: Codex app-server was not found. Open the Codex app or install the Codex CLI."}
+{"fn": "read_account", "args": [], "error": "RuntimeError: Codex app-server was not found. Open the Codex app or install the Codex CLI."}
+{"fn": "read_account", "args": [255], "error": "RuntimeError: Codex app-server was not found. Open the Codex app or install the Codex CLI."}
+{"fn": "read_account", "args": [-1], "error": "RuntimeError: Codex app-server was not found. Open the Codex app or install the Codex CLI."}
+{"fn": "read_account", "args": [100], "error": "RuntimeError: Codex app-server was not found. Open the Codex app or install the Codex CLI."}
+{"fn": "read_account", "args": [9223372036854775807], "error": "RuntimeError: Codex app-server was not found. Open the Codex app or install the Codex CLI."}
+{"fn": "read_account", "args": [-7], "error": "RuntimeError: Codex app-server was not found. Open the Codex app or install the Codex CLI."}
+{"fn": "read_account", "args": [2147483648], "error": "RuntimeError: Codex app-server was not found. Open the Codex app or install the Codex CLI."}
+{"fn": "read_account", "args": [-2147483649], "error": "RuntimeError: Codex app-server was not found. Open the Codex app or install the Codex CLI."}
+{"fn": "read_account", "args": [9007199254740993], "error": "RuntimeError: Codex app-server was not found. Open the Codex app or install the Codex CLI."}
+{"fn": "read_account", "args": [-9223372036854775808], "error": "RuntimeError: Codex app-server was not found. Open the Codex app or install the Codex CLI."}
+{"fn": "normalize", "args": [["a", 1]], "error": "AttributeError: 'list' object has no attribute 'get'"}
+{"fn": "normalize", "args": ["x"], "error": "AttributeError: 'str' object has no attribute 'get'"}
+{"fn": "normalize", "args": [0], "error": "AttributeError: 'int' object has no attribute 'get'"}
+{"fn": "normalize", "args": [true], "error": "AttributeError: 'bool' object has no attribute 'get'"}
+{"fn": "normalize", "args": [{}], "ok": {"summary": {"lifetimeTokens": null, "peakDailyTokens": null, "longestRunningTurnSec": null, "currentStreakDays": null, "longestStreakDays": null}, "daily": null}}
+{"fn": "normalize", "args": [{"a": {"b": "c"}}], "ok": {"summary": {"lifetimeTokens": null, "peakDailyTokens": null, "longestRunningTurnSec": null, "currentStreakDays": null, "longestStreakDays": null}, "daily": null}}
+{"fn": "normalize", "args": [{"a": "b"}], "ok": {"summary": {"lifetimeTokens": null, "peakDailyTokens": null, "longestRunningTurnSec": null, "currentStreakDays": null, "longestStreakDays": null}, "daily": null}}
+{"fn": "normalize", "args": [null], "error": "AttributeError: 'NoneType' object has no attribute 'get'"}
+{"fn": "normalize", "args": [[]], "error": "AttributeError: 'list' object has no attribute 'get'"}
+{"fn": "normalize", "args": [{"zebra": 1, "apple": 2, "10": 3, "2": 4, "é": 5, "Apple": 6}], "ok": {"summary": {"lifetimeTokens": null, "peakDailyTokens": null, "longestRunningTurnSec": null, "currentStreakDays": null, "longestStreakDays": null}, "daily": null}}
+{"fn": "normalize", "args": [{"n": 9007199254740993, "f": 1e+21, "t": 0.1, "neg": -7}], "ok": {"summary": {"lifetimeTokens": null, "peakDailyTokens": null, "longestRunningTurnSec": null, "currentStreakDays": null, "longestStreakDays": null}, "daily": null}}
+{"fn": "normalize", "args": [[3, 1, 2]], "error": "AttributeError: 'list' object has no attribute 'get'"}
+{"fn": "normalize", "args": [{"dailyUsageBuckets": [{"startDate": "2026-10-29", "tokens": 4}, {"startDate": "2026-10-31", "tokens": 7}, {"startDate": "2026-10-31", "tokens": 2}, {"startDate": "invalid", "tokens": 9}]}], "ok": {"summary": {"lifetimeTokens": null, "peakDailyTokens": null, "longestRunningTurnSec": null, "currentStreakDays": null, "longestStreakDays": null}, "daily": {"2026-10-29": 4, "2026-10-31": 9}}}
+{"fn": "normalize", "args": [{"summary": {"lifetimeTokens": 123, "email": "private"}, "other": "private"}], "ok": {"summary": {"lifetimeTokens": 123, "peakDailyTokens": null, "longestRunningTurnSec": null, "currentStreakDays": null, "longestStreakDays": null}, "daily": null}}
+{"fn": "normalize", "args": [{"summary": {"lifetimeTokens": 0}}], "ok": {"summary": {"lifetimeTokens": 0, "peakDailyTokens": null, "longestRunningTurnSec": null, "currentStreakDays": null, "longestStreakDays": null}, "daily": null}}
