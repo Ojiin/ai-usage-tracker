@@ -1,0 +1,109 @@
+/* The look of the Python widget: its palette and font sizes (points, as tkinter counted them).
+   Colours that depend on the data arrive with the view model; these are the fixed ones. */
+:root {
+  --card: #1d2128;
+  --text: #e6e8eb;
+  --muted: #98a2b3;
+  --track: #2a2f37;
+  --working: #12b76a;
+  --warn: #f79009;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: transparent;
+  overflow: hidden;
+}
+body.solid { background: var(--card); }  /* the hover card and the dialog are not see-through */
+
+body {
+  font-family: "Segoe UI", "Selawik", "Noto Sans", "DejaVu Sans", "Liberation Sans", sans-serif;
+  color: var(--text);
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#card, #tip {
+  background: var(--card);
+  border: 1px solid var(--track);
+}
+
+/* Slightly see-through, as the tkinter window was (alpha 0.96); its window is transparent. */
+#card {
+  width: 290px;
+  padding: 10px 14px;
+  opacity: 0.96;
+}
+
+.small { font-size: 8pt; line-height: 1.45; color: var(--muted); }
+.wrap { overflow-wrap: anywhere; }
+.spaced { white-space: pre; }       /* keeps the spaces tkinter showed */
+.lines { white-space: pre-line; }   /* a text of two lines */
+.italic { font-style: italic; }
+.right { margin-left: auto; }
+.dot { font-size: 8pt; margin-right: 2px; }
+
+/* --- header ------------------------------------------------------------- */
+header { display: flex; align-items: center; }
+.title { font-size: 10pt; font-weight: bold; }
+#working { font-size: 8pt; color: var(--working); margin-left: 8px; }
+.buttons { margin-left: auto; display: flex; }
+.buttons button {
+  font: inherit;
+  font-size: 11pt;
+  line-height: 1.3;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  padding: 0 4px;
+  cursor: pointer;
+}
+.buttons button:hover { color: var(--text); }
+
+/* --- today / this month -------------------------------------------------- */
+.stat-label { font-size: 8pt; line-height: 1.45; color: var(--muted); margin-top: 8px; }
+.stat { font-size: 18pt; font-weight: bold; line-height: 1.3; }
+
+/* --- blocks: cost, limits, API ------------------------------------------- */
+.head { display: flex; align-items: baseline; margin-top: 10px; }
+.cost { display: flex; align-items: baseline; }
+.cost .month { font-size: 16pt; font-weight: bold; line-height: 1.3; }
+.cost .today { font-size: 9pt; color: var(--text); }
+.spend { font-size: 9pt; font-weight: bold; color: var(--text); }
+
+.limit { display: flex; align-items: baseline; margin-top: 4px; font-size: 9pt; line-height: 1.45; }
+.limit .percent { font-weight: bold; }
+.bar { height: 6px; margin-top: 2px; background: var(--track); }
+.bar div { height: 100%; }
+
+.note { margin-top: 6px; }
+.source { margin-top: 2px; min-height: 1.45em; }
+.balance { font-size: 10pt; font-weight: bold; line-height: 1.45; margin-top: 2px; }
+
+#status { margin-top: 10px; }
+
+/* --- hover card (tip.html) ------------------------------------------------ */
+#tip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: max-content;
+  padding: 8px 10px;
+}
+#tip .session + .session { margin-top: 8px; }
+#tip .who { font-size: 9pt; font-weight: bold; line-height: 1.45; white-space: nowrap; }
+#tip .detail { max-width: 380px; margin-left: 12px; }
+
+/* --- "Set API balance…" (balance.html) ----------------------------------- */
+body.dialog { overflow: visible; user-select: auto; -webkit-user-select: auto; }
+#balance { padding: 12px 14px; font-size: 9pt; color: var(--muted); }
+#balance p { margin: 0; line-height: 1.45; }
+#balance .field { display: flex; align-items: center; margin-top: 8px; }
+#balance .field span { width: 110px; }
+#balance .field select, #balance .field input { flex: 1; min-width: 0; font: inherit; padding: 2px 4px; }
+#balance .error { font-size: 8pt; color: var(--warn); min-height: 1.45em; margin-top: 2px; }
+#balance .actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 8px; }
+#balance .actions button { font: inherit; padding: 2px 12px; }

@@ -96,7 +96,11 @@ mod tests {
         assert!(again.flag("alerts", true));
 
         // what the Python widget wrote, plus a key from some other version
-        std::fs::write(&path, r#"{"x": 100, "y": 80, "topmost": true, "alerts": false, "later": [1]}"#).unwrap();
+        std::fs::write(
+            &path,
+            r#"{"x": 100, "y": 80, "topmost": true, "alerts": false, "later": [1]}"#,
+        )
+        .unwrap();
         let mut python = Settings::load(&path);
         assert_eq!(python.position(), (Some(100), Some(80)));
         assert!(python.flag("topmost", false));

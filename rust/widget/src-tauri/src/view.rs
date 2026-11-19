@@ -46,7 +46,8 @@ impl Clock {
         }
     }
 
-    fn at(&self, epoch: f64, pattern: &str) -> String {
+    /// `datetime.fromtimestamp(epoch).strftime(pattern)`.
+    pub fn at(&self, epoch: f64, pattern: &str) -> String {
         self.zone.strftime(epoch, pattern).unwrap_or_default()
     }
 
@@ -179,7 +180,7 @@ fn list<'a>(v: &'a Value, key: &str) -> &'a [Value] {
         .map_or(&[], Vec::as_slice)
 }
 
-fn object<'a>(v: Option<&'a Value>) -> Option<&'a Map<String, Value>> {
+fn object(v: Option<&Value>) -> Option<&Map<String, Value>> {
     v.and_then(Value::as_object)
 }
 
@@ -406,8 +407,7 @@ fn tool_cost(
             _ => false,
         });
     if unpriced {
-        block.warning =
-            Some("some models have no price in pricing.json and aren't counted".into());
+        block.warning = Some("some models have no price in pricing.json and aren't counted".into());
     }
     block
 }
@@ -594,16 +594,21 @@ pub fn working(active: &Value) -> String {
     match total {
         Num::Int(0) => String::new(),
         Num::Int(n) => format!("● {n} working"),
-        Num::Float(x) if x == 0.0 => String::new(),
         Num::Float(x) => format!("● {x:?} working"),
     }
 }
 
+/// `today_spend` in `balance_dialog`: what the provider's report already shows for today (UTC),
+/// so a balance entered now is not charged for it again.
+pub fn today_spend(data: Option<&Value>, provider: &str, utc_day: &str) -> Option<f64> {
+    let entry = list(data?, "api")
+        .iter()
+        .find(|p| p.get("provider").and_then(Value::as_str) == Some(provider))?;
+    get(entry, "daily")?.get(utc_day)?.as_f64()
+}
+
 /// `_show_working`: one row per working session for the hover card.
-pub fn tip(
-    sessions: &[Value],
-    describe: &dyn Fn(&Value) -> Result<String, String>,
-) -> Vec<TipRow> {
+pub fn tip(sessions: &[Value], describe: &dyn Fn(&Value) -> Result<String, String>) -> Vec<TipRow> {
     sessions
         .iter()
         .filter_map(|info| {
@@ -696,7 +701,11 @@ mod tests {
             })
         );
         assert_eq!(claude.windows[2].pace, None);
-        assert!(claude.note.as_deref().unwrap().starts_with("live, checked "));
+        assert!(claude
+            .note
+            .as_deref()
+            .unwrap()
+            .starts_with("live, checked "));
         assert_eq!(claude.error, None);
 
         let codex = &view.limits[1];
@@ -735,7 +744,9 @@ mod tests {
             (anthropic.lines[1].color, anthropic.lines[1].kind),
             (TEXT, "balance")
         );
-        assert!(anthropic.lines[2].text.starts_with("estimate: $250.00 entered "));
+        assert!(anthropic.lines[2]
+            .text
+            .starts_with("estimate: $250.00 entered "));
         assert!(anthropic.lines[2].text.ends_with(" − $61.37 spent since"));
         let openai = &view.api[1];
         assert_eq!(openai.color, Some("#10a37f"));
@@ -759,7 +770,10 @@ mod tests {
             Some("no Claude Code login found")
         );
         assert_eq!(view.api.len(), 1);
-        assert_eq!((view.api[0].title.as_str(), view.api[0].color), ("API SPEND", None));
+        assert_eq!(
+            (view.api[0].title.as_str(), view.api[0].color),
+            ("API SPEND", None)
+        );
         assert_eq!(view.notes.len(), 1); // no OpenAI account report
 
         data["has_pricing"] = json!(false);
@@ -803,7 +817,11 @@ mod tests {
         assert_eq!(bar.reset, "resets Fri 09:00 · in 59m");
         let unknown = &view.limits[0].windows[1];
         assert_eq!(
-            (unknown.label.as_str(), unknown.percent.as_str(), unknown.reset.as_str()),
+            (
+                unknown.label.as_str(),
+                unknown.percent.as_str(),
+                unknown.reset.as_str()
+            ),
             ("?", "0%", "")
         );
         assert_eq!(
@@ -864,6 +882,19 @@ mod tests {
     }
 
     #[test]
+    fn todays_spend_for_the_balance_dialog() {
+        let data = json!({"api": [{"provider": "Anthropic", "daily": {"2027-01-15": 3.4182}},
+                                  {"provider": "OpenAI", "daily": {}}, {"provider": "Other"}]});
+        let spend = |provider, day| today_spend(Some(&data), provider, day);
+        assert_eq!(spend("Anthropic", "2027-01-15"), Some(3.4182));
+        assert_eq!(spend("Anthropic", "2027-01-16"), None);
+        assert_eq!(spend("OpenAI", "2027-01-15"), None);
+        assert_eq!(spend("Other", "2027-01-15"), None);
+        assert_eq!(spend("Nobody", "2027-01-15"), None);
+        assert_eq!(today_spend(None, "Anthropic", "2027-01-15"), None);
+    }
+
+    #[test]
     fn hover_card_rows() {
         let data = fixture();
         let sessions = data["_working_details"].as_array().unwrap();
@@ -880,6 +911,9 @@ mod tests {
         assert_eq!(rows[0].lines[3], "Claude Code · last write 8s ago");
         assert_eq!(rows[1].color, "#5b8ff0");
         assert_eq!(rows[1].title, "gpt-6.1-sol high working on photo");
-        assert_eq!(tip(&[json!({"tool": "Codex"})], &core::describe_session), []);
+        assert_eq!(
+            tip(&[json!({"tool": "Codex"})], &core::describe_session),
+            []
+        );
     }
 }

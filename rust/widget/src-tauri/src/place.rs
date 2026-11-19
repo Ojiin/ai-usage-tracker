@@ -57,7 +57,14 @@ pub fn peek_position(icon: Bounds, size: (i64, i64), screen: Bounds) -> (i64, i6
         .max(left)
         .min(right - width);
     let above = icon.1 - height - PEEK_GAP;
-    (x, if above < top { icon.3 + PEEK_GAP } else { above })
+    (
+        x,
+        if above < top {
+            icon.3 + PEEK_GAP
+        } else {
+            above
+        },
+    )
 }
 
 pub fn contains(bounds: Bounds, point: (i64, i64)) -> bool {
@@ -130,7 +137,11 @@ mod tests {
         assert_eq!(virtual_screen(&[]), None);
         assert_eq!(virtual_screen(&[(0, 0, 1920, 1080)]), Some(FULL_HD));
         assert_eq!(
-            virtual_screen(&[(0, 0, 1920, 1080), (-1280, 56, 1280, 1024), (1920, -200, 2560, 1440)]),
+            virtual_screen(&[
+                (0, 0, 1920, 1080),
+                (-1280, 56, 1280, 1024),
+                (1920, -200, 2560, 1440)
+            ]),
             Some((-1280, -200, 4480, 1240))
         );
     }
@@ -149,10 +160,19 @@ mod tests {
             (867, 440)
         );
         // taskbar along the top
-        assert_eq!(peek_position((1800, 8, 1824, 32), size, FULL_HD), (1630, 40));
+        assert_eq!(
+            peek_position((1800, 8, 1824, 32), size, FULL_HD),
+            (1630, 40)
+        );
         // left taskbar: clamped to the left edge; odd sums round down as Python's // does
-        assert_eq!(peek_position((8, 500, 31, 524), (290, 400), FULL_HD), (0, 92));
-        assert_eq!(peek_position((301, 900, 302, 924), (290, 400), FULL_HD), (156, 492));
+        assert_eq!(
+            peek_position((8, 500, 31, 524), (290, 400), FULL_HD),
+            (0, 92)
+        );
+        assert_eq!(
+            peek_position((301, 900, 302, 924), (290, 400), FULL_HD),
+            (156, 492)
+        );
     }
 
     #[test]
@@ -171,7 +191,10 @@ mod tests {
     fn hover_card_opens_below_or_above_and_stays_on_screen() {
         let label = (1700, 70, 1760, 84);
         assert_eq!(tip_position(label, (400, 150), FULL_HD), (1520, 88));
-        assert_eq!(tip_position((100, 70, 160, 84), (400, 150), FULL_HD), (100, 88));
+        assert_eq!(
+            tip_position((100, 70, 160, 84), (400, 150), FULL_HD),
+            (100, 88)
+        );
         let low = (100, 1000, 160, 1014);
         assert_eq!(tip_position(low, (400, 150), FULL_HD), (100, 846));
         assert_eq!(tip_position((-50, 5, 10, 19), (400, 2000), FULL_HD), (0, 0));

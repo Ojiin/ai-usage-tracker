@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Set API balance</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="solid dialog">
+
+<!-- "Set API balance…": ask for the balance the provider's billing page shows right now. -->
+<form id="balance">
+  <p>Enter the credit balance your billing page shows now.<br>
+     The widget subtracts spend reported after this.</p>
+  <label class="field"><span>Provider</span><select id="provider"></select></label>
+  <label class="field"><span>Balance (USD)</span><input id="amount" autocomplete="off"></label>
+  <div class="error" id="error"></div>
+  <div class="actions">
+    <button type="button" id="clear">Clear</button>
+    <button type="button" id="cancel">Cancel</button>
+    <button type="submit">Save</button>
+  </div>
+</form>
+
+<script>
+const { invoke } = window.__TAURI__.core;
+const { listen } = window.__TAURI__.event;
+const $ = (id) => document.getElementById(id);
+
+// Each time the dialog opens it starts empty, with the providers Rust knows.
+function open(providers) {
+  $("provider").replaceChildren(...providers.map((name) => new Option(name, name)));
+  $("amount").value = "";
+  $("error").textContent = "";
+  $("amount").focus();
+  invoke("fit", { width: document.body.offsetWidth, height: $("balance").offsetHeight });
+}
+
+// Rust checks the amount and saves it; a refusal comes back as the text to show.
+function send(command, args) {
+  invoke(command, args).catch((message) => { $("error").textContent = message; });
+}
+
+$("balance").addEventListener("submit", (event) => {
+  event.preventDefault();
+  send("balance_save", { provider: $("provider").value, amount: $("amount").value });
+});
+$("clear").addEventListener("click", () => send("balance_clear", { provider: $("provider").value }));
+$("cancel").addEventListener("click", () => invoke("balance_cancel"));
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") invoke("balance_cancel");
+});
+
+listen("balance-open", (event) => open(event.payload));
+invoke("balance_providers").then(open);
+</script>
+</body>
+</html>

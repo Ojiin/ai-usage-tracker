@@ -23,7 +23,8 @@ tauri-plugin-notification = "2"
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 # preserve_order: the scan data is walked in the order Python's dicts had.
-serde_json = { version = "1", features = ["preserve_order"] }
+# float_roundtrip: numbers are read to the same float Python's json reads.
+serde_json = { version = "1", features = ["preserve_order", "float_roundtrip"] }
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
 # The ported core. Only src/core.rs may call these crates.
 limits-watch-rs = { path = "../../limits-watch-rs" }

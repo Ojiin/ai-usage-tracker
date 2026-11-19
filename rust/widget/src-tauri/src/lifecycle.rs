@@ -219,10 +219,7 @@ mod tests {
         );
         // the shell reports the icon again while it is up: move, but one tracker only
         let moved = (1700, 1048, 1724, 1072);
-        assert_eq!(
-            app.on_tray(TrayEvent::Peek(moved)),
-            [Effect::PeekAt(moved)]
-        );
+        assert_eq!(app.on_tray(TrayEvent::Peek(moved)), [Effect::PeekAt(moved)]);
         assert_eq!(app.peeking, Some(moved));
         // pointer left: back to the tray, always-on-top back to the setting
         assert_eq!(

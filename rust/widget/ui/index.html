@@ -1,1 +1,42 @@
-<!doctype html><title>x</title>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Usage</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- The card. Everything written in it comes from Rust (src-tauri/src/view.rs) as a view
+     model; app.js only turns that into elements and sends clicks back. -->
+<main id="card">
+  <header>
+    <span class="title">AI Usage</span>
+    <span id="working"></span>
+    <span class="buttons">
+      <button data-press="refresh" title="Refresh">⟳</button>
+      <button data-press="dashboard" title="Open dashboard">↗</button>
+      <button data-press="hide" title="Hide to tray">−</button>
+      <button data-press="close" title="Close">✕</button>
+    </span>
+  </header>
+
+  <div class="stat-label">TODAY</div>
+  <div class="stat" id="today">—</div>
+  <div class="small" id="today-split"></div>
+
+  <div class="stat-label">THIS MONTH</div>
+  <div class="stat" id="month">—</div>
+  <div class="small" id="month-sub"></div>
+
+  <section id="costs"></section>
+  <section id="limits"></section>
+  <section id="api"></section>
+
+  <div class="small" id="status">Scanning…</div>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

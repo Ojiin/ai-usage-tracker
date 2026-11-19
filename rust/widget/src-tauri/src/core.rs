@@ -275,10 +275,7 @@ mod tests {
         let limits = &data["plan_limits"][0];
         assert_eq!(limits["as_of"], "2027-01-15T08:01:40Z");
         assert_eq!(limits["windows"][0]["resets_at"], 1_800_003_700);
-        assert_eq!(
-            limits["windows"][0]["projection"]["hits_at"],
-            1_800_001_900
-        );
+        assert_eq!(limits["windows"][0]["projection"]["hits_at"], 1_800_001_900);
         assert_eq!(limits["windows"][0]["projection"]["pct"], 82.0);
         assert_eq!(limits["windows"][1]["resets_at"], Value::Null);
         assert_eq!(data["api"][0]["as_of"], "2027-01-15T07:01:40Z");

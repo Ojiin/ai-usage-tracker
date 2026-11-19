@@ -34,19 +34,41 @@ impl Num {
         }
     }
 
-    /// Python's `+`.
-    pub fn plus(self, other: Num) -> Num {
-        match (self, other) {
-            (Num::Int(a), Num::Int(b)) => a
-                .checked_add(b)
-                .map_or(Num::Float(a as f64 + b as f64), Num::Int),
-            (a, b) => Num::Float(a.f() + b.f()),
-        }
-    }
-
-    /// Python's `sum(...)`, which starts from the int 0.
+    /// Python's `sum(...)`, as Python 3.12 and later add up: whole numbers exactly, and from
+    /// the first float on with a running correction for the rounding of each addition
+    /// (Neumaier's), so a month of costs comes out the same to the cent.
     pub fn sum(items: impl IntoIterator<Item = Num>) -> Num {
-        items.into_iter().fold(Num::Int(0), Num::plus)
+        let mut items = items.into_iter();
+        let mut whole: i128 = 0;
+        let mut total = loop {
+            match items.next() {
+                None => return Num::Int(whole),
+                Some(Num::Int(i)) => match whole.checked_add(i) {
+                    Some(sum) => whole = sum,
+                    None => break whole as f64 + i as f64,
+                },
+                Some(Num::Float(x)) => break whole as f64 + x,
+            }
+        };
+        let mut correction = 0.0;
+        for item in items {
+            match item {
+                Num::Float(x) => {
+                    let sum = total + x;
+                    correction += if total.abs() >= x.abs() {
+                        (total - sum) + x
+                    } else {
+                        (x - sum) + total
+                    };
+                    total = sum;
+                }
+                Num::Int(i) => total += i as f64,
+            }
+        }
+        if correction != 0.0 && correction.is_finite() {
+            total += correction;
+        }
+        Num::Float(total)
     }
 }
 
@@ -133,6 +155,14 @@ pub fn float_or_zero(v: Option<&Value>) -> f64 {
         Some(v) => Num::of(v).map_or(0.0, Num::f),
         None => 0.0,
     }
+}
+
+/// The amount typed into "Set API balance…": `float(text.replace("$", "").replace(",", "").strip())`.
+/// `None` is "Enter a number". Unlike Python, "inf" and "nan" are not numbers here.
+pub fn parse_amount(text: &str) -> Option<f64> {
+    let cleaned = text.replace(['$', ','], "");
+    let amount: f64 = cleaned.trim().parse().ok()?;
+    amount.is_finite().then_some(amount)
 }
 
 /// Where "local time" is: the PC's zone, or a fixed one so tests and the differential check
@@ -304,6 +334,17 @@ mod tests {
     }
 
     #[test]
+    fn typed_amounts() {
+        assert_eq!(parse_amount("25"), Some(25.0));
+        assert_eq!(parse_amount(" $1,234.50 "), Some(1234.5));
+        assert_eq!(parse_amount("-3.2"), Some(-3.2));
+        assert_eq!(parse_amount("1e2"), Some(100.0));
+        for bad in ["", "  ", "abc", "12 dollars", "1.2.3", "inf", "nan", "$"] {
+            assert_eq!(parse_amount(bad), None, "{bad:?}");
+        }
+    }
+
+    #[test]
     fn sums_like_python() {
         let values = [json!(5895780), json!(1313000)];
         assert_eq!(
@@ -312,6 +353,11 @@ mod tests {
         );
         let mixed = [json!(1), json!(0.5), json!(true)];
         assert_eq!(Num::sum(mixed.iter().filter_map(Num::of)), Num::Float(2.5));
+        // 0.1 ten times is exactly 1.0 for Python's sum(), though not for a plain loop
+        assert_eq!(Num::sum([Num::Float(0.1); 10]), Num::Float(1.0));
+        assert_ne!((0..10).fold(0.0, |sum, _| sum + 0.1), 1.0);
+        let costs = [1e16, 1.0, -1e16, 1.0].map(Num::Float);
+        assert_eq!(Num::sum(costs), Num::Float(2.0));
         assert_eq!(Num::of(&json!("12")), None);
         assert_eq!(float_or_zero(Some(&json!("82"))), 82.0);
         assert_eq!(float_or_zero(Some(&json!(null))), 0.0);
@@ -321,17 +367,14 @@ mod tests {
 
     #[test]
     fn times_in_a_fixed_zone() {
-        let zone = Zone::Fixed(FixedOffset::east_opt(2 * 3600).unwrap_or_else(|| unreachable!()));
+        let zone = Zone::Fixed(FixedOffset::east_opt(2 * 3600).unwrap());
         let epoch = zone.parse_iso("2027-01-15T08:00:00Z");
         assert_eq!(epoch, Some(1_800_000_000.0));
         assert_eq!(
             zone.parse_iso("2027-01-15T08:00:00.000+00:00"),
             Some(1_800_000_000.0)
         );
-        assert_eq!(
-            zone.parse_iso("2027-01-15 10:00:00"),
-            Some(1_800_000_000.0)
-        );
+        assert_eq!(zone.parse_iso("2027-01-15 10:00:00"), Some(1_800_000_000.0));
         assert_eq!(zone.parse_iso("2027-01-15T10:00"), Some(1_800_000_000.0));
         assert_eq!(zone.parse_iso("yesterday"), None);
         assert_eq!(

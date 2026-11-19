@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AI Usage: working sessions</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="solid">
+
+<!-- The hover card of "● N working": one block per working session. -->
+<main id="tip"></main>
+
+<script>
+const { invoke } = window.__TAURI__.core;
+const { listen } = window.__TAURI__.event;
+
+function el(tag, className, text, color) {
+  const node = document.createElement(tag);
+  node.className = className;
+  node.textContent = text;
+  if (color) node.style.color = color;
+  return node;
+}
+
+// Rust sends the rows; draw them, then say how big the card came out so Rust can place it.
+listen("tip", (event) => {
+  const tip = document.getElementById("tip");
+  tip.replaceChildren(...event.payload.map((session) => {
+    const block = el("div", "session", "");
+    const who = el("div", "who", "");
+    who.append(el("span", "dot", "●", session.color), el("span", "", session.title));
+    block.append(who, ...session.lines.map((line) => el("div", "small wrap detail", line)));
+    return block;
+  }));
+  // (Not in requestAnimationFrame: a window that is still hidden never gets a frame.)
+  invoke("tip_ready", { width: tip.offsetWidth, height: tip.offsetHeight });
+});
+</script>
+</body>
+</html>

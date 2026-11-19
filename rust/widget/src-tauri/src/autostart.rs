@@ -9,6 +9,7 @@
 use std::io;
 use std::path::Path;
 
+#[cfg_attr(not(windows), allow(dead_code))] // only the registry reads it
 pub const RUN_KEY: &str = r"Software\Microsoft\Windows\CurrentVersion\Run";
 pub const NAME: &str = "AIUsageTracker";
 
@@ -191,7 +192,10 @@ mod tests {
 
     #[test]
     fn failure_message_fits_the_status_line() {
-        let error = io::Error::new(io::ErrorKind::PermissionDenied, "Access is denied. ".repeat(5));
+        let error = io::Error::new(
+            io::ErrorKind::PermissionDenied,
+            "Access is denied. ".repeat(5),
+        );
         let message = failure(&error);
         assert!(message.starts_with("Couldn't change startup: Access is denied."));
         assert_eq!(message.chars().count(), 60);
