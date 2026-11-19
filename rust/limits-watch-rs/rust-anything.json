@@ -1,0 +1,176 @@
+{
+  "schema": "rust-anything/bridge@1",
+  "root": "/home/user/ai-usage-tracker",
+  "unit": "limits_watch.py",
+  "language": "python",
+  "kind": "pyo3",
+  "crate_name": "limits-watch-rs",
+  "exports": [
+    {
+      "name": "to_epoch",
+      "file": "limits_watch.py",
+      "line": 23,
+      "params": [
+        {
+          "name": "iso",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "same_window",
+      "file": "limits_watch.py",
+      "line": 45,
+      "params": [
+        {
+          "name": "a",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false
+        },
+        {
+          "name": "b",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "lookback",
+      "file": "limits_watch.py",
+      "line": 49,
+      "params": [
+        {
+          "name": "now",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false
+        },
+        {
+          "name": "resets_at",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "project",
+      "file": "limits_watch.py",
+      "line": 54,
+      "params": [
+        {
+          "name": "samples",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        },
+        {
+          "name": "now",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false
+        },
+        {
+          "name": "resets_at",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "window_key",
+      "file": "limits_watch.py",
+      "line": 86,
+      "params": [
+        {
+          "name": "entry",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        },
+        {
+          "name": "w",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    },
+    {
+      "name": "record_and_project",
+      "file": "limits_watch.py",
+      "line": 90,
+      "params": [
+        {
+          "name": "entries",
+          "ts_type": "unknown",
+          "optional": false,
+          "rest": false
+        },
+        {
+          "name": "now",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false
+        },
+        {
+          "name": "path",
+          "ts_type": "unknown",
+          "optional": true,
+          "rest": false,
+          "default": "None"
+        }
+      ],
+      "returns": "unknown",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false
+    }
+  ],
+  "classes": [],
+  "js_only": [
+    {
+      "name": "pace_text",
+      "file": "limits_watch.py",
+      "line": 116,
+      "reason": "calls its parameter `fmt_time`: a callable"
+    },
+    {
+      "name": "due_alerts",
+      "file": "limits_watch.py",
+      "line": 124,
+      "reason": "calls its parameter `fmt_time`: a callable"
+    }
+  ]
+}

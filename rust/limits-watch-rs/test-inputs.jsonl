@@ -1,0 +1,30 @@
+{"fn": "project", "args": [[[1799997000, 50, 1800010800], [1799998000, 20, 1800010800], [1800000000, 30, 1800010800]], 1800000000, 1800010800]}
+{"fn": "same_window", "args": [1800010800, 1800010800]}
+{"fn": "lookback", "args": [1800000000, 1800010800]}
+{"fn": "project", "args": [[[1799998200, 40, 1800010800], [1800000000, 60, 1800010800]], 1800000000, 1800010800]}
+{"fn": "project", "args": [[[1799999700, 10, 1800010800], [1800000000, 30, 1800010800]], 1800000000, 1800010800]}
+{"fn": "project", "args": [[[1799998200, 30, 1800010800], [1800000000, 30, 1800010800]], 1800000000, 1800010800]}
+{"fn": "project", "args": [[[1799996400, 10, 1800010800], [1799997600, 20, 1800010800]], 1800000000, 1800010800]}
+{"fn": "project", "args": [[[1799996400, 10, 1800010800], [1800000000, 15, 1800010800]], 1800000000, 1800010800]}
+{"fn": "project", "args": [[[1799998200, 90, 1799992800], [1799998800, 2, 1800010800], [1800000000, 6, 1800010800]], 1800000000, 1800010800]}
+{"fn": "same_window", "args": [1799992800, 1800010800]}
+{"fn": "record_and_project", "args": [[{"service": "Claude Code", "source": "live", "as_of": "2027-01-15T07:30:00+00:00", "error": null, "windows": [{"label": "5-hour session", "used_percent": 40, "resets_at": 1800010800}]}], 1799998200, {"$repr": "PosixPath"}]}
+{"fn": "to_epoch", "args": ["2027-01-15T07:30:00+00:00"]}
+{"fn": "window_key", "args": [{"service": "Claude Code", "source": "live", "as_of": "2027-01-15T07:30:00+00:00", "error": null, "windows": [{"label": "5-hour session", "used_percent": 40, "resets_at": 1800010800}]}, {"label": "5-hour session", "used_percent": 40, "resets_at": 1800010800}]}
+{"fn": "project", "args": [[[1799998200, {"$float": "40.0"}, 1800010800]], 1799998200, 1800010800]}
+{"fn": "lookback", "args": [1799998200, 1800010800]}
+{"fn": "record_and_project", "args": [[{"service": "Claude Code", "source": "live", "as_of": "2027-01-15T08:00:00+00:00", "error": null, "windows": [{"label": "5-hour session", "used_percent": 60, "resets_at": 1800010800}]}], 1800000000, {"$repr": "PosixPath"}]}
+{"fn": "to_epoch", "args": ["2027-01-15T08:00:00+00:00"]}
+{"fn": "window_key", "args": [{"service": "Claude Code", "source": "live", "as_of": "2027-01-15T08:00:00+00:00", "error": null, "windows": [{"label": "5-hour session", "used_percent": 60, "resets_at": 1800010800}]}, {"label": "5-hour session", "used_percent": 60, "resets_at": 1800010800}]}
+{"fn": "project", "args": [[[1799998200, {"$float": "40.0"}, 1800010800], [1800000000, {"$float": "60.0"}, 1800010800]], 1800000000, 1800010800]}
+{"fn": "record_and_project", "args": [[{"service": "Claude Code", "source": "cached", "as_of": "2027-01-15T08:00:00+00:00", "error": null, "windows": [{"label": "5-hour session", "used_percent": 60, "resets_at": 1800010800}]}], 1800000060, {"$repr": "PosixPath"}]}
+{"fn": "window_key", "args": [{"service": "Claude Code", "source": "cached", "as_of": "2027-01-15T08:00:00+00:00", "error": null, "windows": [{"label": "5-hour session", "used_percent": 60, "resets_at": 1800010800}]}, {"label": "5-hour session", "used_percent": 60, "resets_at": 1800010800}]}
+{"fn": "window_key", "args": [{"service": "Claude Code", "source": "live", "as_of": "2027-01-15T08:00:00+00:00", "error": null, "windows": [{"label": "5-hour session", "used_percent": 82, "resets_at": 1800010800, "projection": {"pct": 82, "rate_per_hour": 20, "hits_at": 1800003240}}]}, {"label": "5-hour session", "used_percent": 82, "resets_at": 1800010800, "projection": {"pct": 82, "rate_per_hour": 20, "hits_at": 1800003240}}]}
+{"fn": "same_window", "args": [null, 1800010800]}
+{"fn": "window_key", "args": [{"service": "Claude Code", "source": "live", "as_of": "2027-01-15T08:00:00+00:00", "error": null, "windows": [{"label": "5-hour session", "used_percent": 50, "resets_at": 1800010800}]}, {"label": "5-hour session", "used_percent": 50, "resets_at": 1800010800}]}
+{"fn": "window_key", "args": [{"service": "Claude Code", "source": "live", "as_of": "2027-01-15T08:00:00+00:00", "error": null, "windows": [{"label": "5-hour session", "used_percent": 82, "resets_at": 1800010800}]}, {"label": "5-hour session", "used_percent": 82, "resets_at": 1800010800}]}
+{"fn": "window_key", "args": [{"service": "Claude Code", "source": "live", "as_of": "2027-01-15T08:00:00+00:00", "error": null, "windows": [{"label": "5-hour session", "used_percent": 85, "resets_at": 1800010800}]}, {"label": "5-hour session", "used_percent": 85, "resets_at": 1800010800}]}
+{"fn": "window_key", "args": [{"service": "Claude Code", "source": "live", "as_of": "2027-01-15T08:00:00+00:00", "error": null, "windows": [{"label": "5-hour session", "used_percent": 100, "resets_at": 1800010800}]}, {"label": "5-hour session", "used_percent": 100, "resets_at": 1800010800}]}
+{"fn": "window_key", "args": [{"service": "Claude Code", "source": "live", "as_of": "2027-01-15T08:00:00+00:00", "error": null, "windows": [{"label": "5-hour session", "used_percent": 81, "resets_at": 1800028800}]}, {"label": "5-hour session", "used_percent": 81, "resets_at": 1800028800}]}
+{"fn": "same_window", "args": [1800010800, 1800028800]}
+{"fn": "window_key", "args": [{"service": "Claude Code", "source": "live", "as_of": "2027-01-15T08:00:00+00:00", "error": null, "windows": [{"label": "5-hour session", "used_percent": 97, "resets_at": 1800010800}]}, {"label": "5-hour session", "used_percent": 97, "resets_at": 1800010800}]}
