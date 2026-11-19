@@ -1368,11 +1368,11 @@
 {"fn": "to_epoch", "args": ["2026-11-01T10:06:00Z"], "ok": {"$float": "1793527560.0"}}
 {"fn": "working_now", "args": [], "ok": {"Claude Code": 0, "Codex": 0}}
 {"fn": "working_details", "args": [120, null], "ok": []}
-{"fn": "codex_db_working", "args": [1795123428.680145], "ok": {"$tuple": [[], {"$set": ["01a19c84-0000-7000-8000-000000000003", "t-attached", "t-crashed", "t-kid", "t-main"]}]}}
+{"fn": "codex_db_working", "args": [1795123591.856919], "ok": {"$tuple": [[], {"$set": ["01a19c84-0000-7000-8000-000000000003", "t-attached", "t-crashed", "t-kid", "t-main"]}]}}
 {"fn": "short_text", "args": ["find the bugs"], "ok": "find the bugs"}
 {"fn": "short_text", "args": ["check the exporter"], "ok": "check the exporter"}
 {"fn": "working_details", "args": [], "ok": []}
-{"fn": "codex_db_working", "args": [1795123428.681531], "ok": {"$tuple": [[], {"$set": ["01a19c84-0000-7000-8000-000000000003", "t-attached", "t-crashed", "t-kid", "t-main"]}]}}
+{"fn": "codex_db_working", "args": [1795123591.858269], "ok": {"$tuple": [[], {"$set": ["01a19c84-0000-7000-8000-000000000003", "t-attached", "t-crashed", "t-kid", "t-main"]}]}}
 {"fn": "describe_session", "args": [{"tool": "Codex", "model": "gpt-6-astra", "effort": "ultra", "project": "photo", "title": "Review Photul", "task": "find the bugs", "age": 0, "subagents": [{"type": "Faraday (subagent)", "description": "check the exporter", "model": "gpt-6-astra", "effort": "high", "age": 0, "project": "photo"}]}], "ok": "gpt-6-astra ultra working on photo\n  “Review Photul”\n  Last prompt: find the bugs\n  ↳ Faraday (subagent) · gpt-6-astra high: check the exporter\n  Codex · last write 0s ago"}
 {"fn": "pretty_model", "args": ["gpt-6-astra"], "ok": "gpt-6-astra"}
 {"fn": "cost_of", "args": [{"tool": "Claude Code", "day": "2026-11-01", "hour": 10, "dow": 6, "model": "claude-opus-5-5", "project": "demo", "session": "s1", "input": 10, "cache_write": 0, "cache_read": 0, "output": 5}, {}], "ok": null}
@@ -1380,7 +1380,7 @@
 {"fn": "pretty_model", "args": ["claude-opus-5-5"], "ok": "Opus 5.5"}
 {"fn": "pretty_model", "args": ["claude-sonnet-5"], "ok": "Sonnet 5"}
 {"fn": "pretty_model", "args": ["gpt-6.1-sol"], "ok": "gpt-6.1-sol"}
-{"fn": "codex_db_working", "args": [1795123428.708722], "ok": {"$tuple": [[], {"$set": ["01a19c84-0000-7000-8000-000000000003", "t-attached", "t-crashed", "t-kid", "t-main"]}]}}
+{"fn": "codex_db_working", "args": [1795123591.865522], "ok": {"$tuple": [[], {"$set": ["01a19c84-0000-7000-8000-000000000003", "t-attached", "t-crashed", "t-kid", "t-main"]}]}}
 {"fn": "claude_session_info", "args": [{"$repr": "PosixPath"}], "error": "TypeError: expected str, bytes or os.PathLike object, not dict"}
 {"fn": "tail_rows", "args": [{"$repr": "PosixPath"}], "error": "TypeError: expected str, bytes or os.PathLike object, not dict"}
 {"fn": "short_text", "args": ["add a hover card"], "ok": "add a hover card"}
@@ -1388,6 +1388,6 @@
 {"fn": "codex_titles", "args": [], "ok": {"01a19c84-0000-7000-8000-000000000001": "Speed up import ✈", "01a19c84-0000-7000-8000-000000000004": "Quiet parent"}}
 {"fn": "describe_session", "args": [{"tool": "Claude Code", "model": "claude-opus-5-5", "effort": "medium", "project": "demo", "title": "Usage tracker", "task": "add a hover card", "age": 0, "subagents": [{"type": "Explore agent", "description": "find the widget code", "model": "claude-opus-5-5", "effort": null, "age": 0}]}], "ok": "Opus 5.5 med working on demo\n  “Usage tracker”\n  Last prompt: add a hover card\n  ↳ Explore agent · Opus 5.5: find the widget code\n  Claude Code · last write 0s ago"}
 {"fn": "describe_session", "args": [{"tool": "Codex", "model": "gpt-6.1-sol", "effort": "high", "project": "demo", "title": "Speed up import", "task": null, "age": 0, "subagents": [{"type": "Ada (subagent)", "description": null, "model": "gpt-6.1-sol", "effort": "medium", "age": 0, "project": null}]}], "ok": "gpt-6.1-sol high working on demo\n  “Speed up import”\n  ↳ Ada (subagent) · gpt-6.1-sol med\n  Codex · last write 0s ago"}
-{"fn": "codex_db_working", "args": [1795123428.709904], "ok": {"$tuple": [[], {"$set": ["01a19c84-0000-7000-8000-000000000003", "t-attached", "t-crashed", "t-kid", "t-main"]}]}}
-{"fn": "codex_db_working", "args": [1795123428.717187], "ok": {"$tuple": [[], {"$set": ["01a19c84-0000-7000-8000-000000000003", "t-attached", "t-crashed", "t-kid", "t-main"]}]}}
+{"fn": "codex_db_working", "args": [1795123591.866664], "ok": {"$tuple": [[], {"$set": ["01a19c84-0000-7000-8000-000000000003", "t-attached", "t-crashed", "t-kid", "t-main"]}]}}
+{"fn": "codex_db_working", "args": [1795123591.869911], "ok": {"$tuple": [[], {"$set": ["01a19c84-0000-7000-8000-000000000003", "t-attached", "t-crashed", "t-kid", "t-main"]}]}}
 {"fn": "short_text", "args": [null, 70], "ok": ""}

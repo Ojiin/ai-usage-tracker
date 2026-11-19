@@ -38,3 +38,22 @@ rust-anything diff .     # run the recorded cases against Rust
 rust-anything shadow .   # run both in the app, log mismatches
 rust-anything gate .     # fmt, clippy, tests, unsafe, API, diff
 ```
+
+## Recording against the fixture home
+
+The scans read `~/.claude` and `~/.codex`, so the cases are recorded against a throwaway home that
+`fixture/make_home.py` builds (fixed timestamps and file times; no usable login). Every command
+below, `diff` and `gate` included, runs with `HOME` set to that folder:
+
+```sh
+python3 fixture/make_home.py "$HOME"                                # the fixture home
+python3 fixture/make_inputs.py ../.. fixture/inputs.jsonl           # realistic cases (hold paths into it)
+rust-anything record . --inputs fixture/inputs.jsonl --from-tests -- python3 -m pytest -q test_tracker.py test_activity.py
+python3 fixture/make_expected.py ../.. fixture/expected.json        # what the original gives beyond the bridge
+TRACKER_FIXTURE_HOME="$HOME" cargo test                             # also compares the port with expected.json
+```
+
+Not bridged, ported in `port::native`: `iter_jsonl`, `codex_db`, `codex_session_info`, `utc_now_iso`,
+`get_json`, `plan_limits`, `aggregate`, `collect`, `write_dashboard` (`build` and `main` belong to the
+app). `aggregate` is checked by `cargo test` against `fixture/aggregate-cases.jsonl`, the cases
+rust-anything recorded for it.
