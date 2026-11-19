@@ -1,7 +1,9 @@
-//! Python semantics the port of `limits_watch.py` needs: truthiness, iteration, `str`, `float`,
-//! `round`, `json.dumps` and `datetime.fromisoformat`, each with the error Python raises.
+//! Python semantics the ports share: types, truthiness, iteration, `str`, `float`, `round`,
+//! `json.dumps` and `datetime.fromisoformat`, each with the error Python raises. Values are
+//! `serde_json::Value`, as the PyO3 bridges pass them.
 
-use crate::pynum::Num;
+#![forbid(unsafe_code)]
+
 use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, TimeZone};
 use serde::Serialize;
 use serde_json::{Value, json};
@@ -17,14 +19,6 @@ pub fn ty(v: &Value) -> &'static str {
         Value::Array(_) => "list",
         Value::Object(m) if m.contains_key("$num") => "float",
         Value::Object(_) => "dict",
-    }
-}
-
-pub fn num_ty(n: Num) -> &'static str {
-    if matches!(n, Num::Int(_)) {
-        "int"
-    } else {
-        "float"
     }
 }
 

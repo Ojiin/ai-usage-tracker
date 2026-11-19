@@ -6,26 +6,25 @@
 
 #![forbid(unsafe_code)]
 
-mod py;
-
 use crate::pynum::Num;
-use py::{dumps, get, iso_micros, iter, num_ty, py_str, round_to, to_float, truthy, ty};
+pub use native::{record_and_project_at, store};
+use pycompat::{dumps, get, iso_micros, iter, py_str, round_to, to_float, truthy, ty};
 use serde_json::{Map, Value, json};
 use std::cmp::Ordering;
 use std::path::{Path, PathBuf};
+
+fn num_ty(n: Num) -> &'static str {
+    if matches!(n, Num::Int(_)) {
+        "int"
+    } else {
+        "float"
+    }
+}
 
 const KEEP_SECONDS: f64 = 8.0 * 86400.0; // weekly windows need a week of samples
 const SAME_WINDOW: f64 = 15.0 * 60.0; // resets_at jitter between polls of the same window
 const MIN_SPAN: f64 = 10.0 * 60.0; // least time between samples to trust a rate
 const MAX_AGE: f64 = 30.0 * 60.0; // no projection from a reading older than this
-
-/// `%LOCALAPPDATA%\AIUsageTracker`, or the home folder where that is not set.
-pub(crate) fn store() -> PathBuf {
-    let base = std::env::var_os("LOCALAPPDATA").map(PathBuf::from);
-    base.or_else(std::env::home_dir)
-        .unwrap_or_default()
-        .join("AIUsageTracker")
-}
 
 /// Port of `to_epoch` (`limits_watch.py:23`): whole seconds, or `None` for anything unreadable.
 pub fn to_epoch(iso: serde_json::Value) -> Result<Option<i64>, String> {
@@ -177,79 +176,88 @@ fn windows(entry: &Value) -> Result<Vec<Value>, String> {
         .map_or_else(|| Ok(Vec::new()), iter)
 }
 
-/// Saves this scan's readings in the history at `path` and sets `w["projection"]` on each
-/// window of a live entry that has a reliable pace.
-pub(crate) fn record_and_project_at(
-    entries: &mut Value,
-    now: Num,
-    path: &Path,
-) -> Result<(), String> {
-    let loaded = std::fs::read_to_string(path)
-        .ok()
-        .and_then(|text| serde_json::from_str(&text).ok());
-    let mut history = match loaded {
-        Some(Value::Object(map)) => map,
-        _ => Map::new(),
-    };
-    for entry in iter(entries)? {
-        for w in windows(&entry)? {
-            let as_of = get(&w, "as_of")?
-                .filter(|v| truthy(v))
-                .or(get(&entry, "as_of")?);
-            let t = to_epoch(as_of.cloned().map_or(Value::Null, |v| v))?;
-            let (Some(t), Some(used)) = (t, get(&w, "used_percent")?) else {
-                continue;
-            };
-            let key = window_key(entry.clone(), w.clone())?;
-            let Value::Array(samples) = history.entry(key).or_insert_with(|| json!([])) else {
-                continue;
-            };
-            if !samples.iter().any(|s| s[0].as_i64() == Some(t)) {
-                samples.push(json!([t, to_float(used)?, w.get("resets_at")]));
-            }
-        }
+/// For Rust callers: the bridge only sees the functions at the top of this file.
+pub mod native {
+    use super::*;
+
+    /// `%LOCALAPPDATA%\AIUsageTracker`, or the home folder where that is not set.
+    pub fn store() -> PathBuf {
+        let base = std::env::var_os("LOCALAPPDATA").map(PathBuf::from);
+        base.or_else(std::env::home_dir)
+            .unwrap_or_default()
+            .join("AIUsageTracker")
     }
-    let oldest = now.f() - KEEP_SECONDS;
-    history.retain(|_, samples| {
-        let mut kept: Vec<Value> = iter(samples).unwrap_or_default();
-        kept.retain(|s| s[0].as_f64().is_some_and(|t| t >= oldest));
-        let key = |s: &Value| (s[0].as_f64(), s[1].as_f64(), s[2].as_f64());
-        kept.sort_by(|a, b| key(a).partial_cmp(&key(b)).map_or(Ordering::Equal, |o| o));
-        *samples = Value::Array(kept);
-        samples.as_array().is_some_and(|kept| !kept.is_empty())
-    });
-    let text = dumps(&Value::Object(history.clone()));
-    // Like the original, a history that cannot be written is not an error.
-    let _ = path
-        .parent()
-        .map_or(Ok(()), std::fs::create_dir_all)
-        .and_then(|()| std::fs::write(path, text));
-    for entry in entries.as_array_mut().into_iter().flatten() {
-        let (live, service) = (entry.get("source") == Some(&json!("live")), entry.clone());
-        for w in entry
-            .get_mut("windows")
-            .and_then(Value::as_array_mut)
-            .into_iter()
-            .flatten()
-        {
-            if let Value::Object(map) = w {
-                map.shift_remove("projection");
-            }
-            let reset = w
-                .get("resets_at")
-                .and_then(|r| r.as_i64().map(Num::Int).or(r.as_f64().map(Num::Float)));
-            if let (true, Some(reset)) = (live, reset) {
-                let samples = history
-                    .get(&window_key(service.clone(), w.clone())?)
-                    .cloned();
-                let projection = project(samples.unwrap_or_else(|| json!([])), now, reset)?;
-                if let (false, Value::Object(map)) = (projection.is_null(), w) {
-                    map.insert("projection".into(), projection);
+
+    /// Saves this scan's readings in the history at `path` and sets `w["projection"]` on each
+    /// window of a live entry that has a reliable pace.
+    pub fn record_and_project_at(entries: &mut Value, now: Num, path: &Path) -> Result<(), String> {
+        let loaded = std::fs::read_to_string(path)
+            .ok()
+            .and_then(|text| serde_json::from_str(&text).ok());
+        let mut history = match loaded {
+            Some(Value::Object(map)) => map,
+            _ => Map::new(),
+        };
+        for entry in iter(entries)? {
+            for w in windows(&entry)? {
+                let as_of = get(&w, "as_of")?
+                    .filter(|v| truthy(v))
+                    .or(get(&entry, "as_of")?);
+                let t = to_epoch(as_of.cloned().map_or(Value::Null, |v| v))?;
+                let (Some(t), Some(used)) = (t, get(&w, "used_percent")?) else {
+                    continue;
+                };
+                let key = window_key(entry.clone(), w.clone())?;
+                let Value::Array(samples) = history.entry(key).or_insert_with(|| json!([])) else {
+                    continue;
+                };
+                if !samples.iter().any(|s| s[0].as_i64() == Some(t)) {
+                    samples.push(json!([t, to_float(used)?, w.get("resets_at")]));
                 }
             }
         }
+        let oldest = now.f() - KEEP_SECONDS;
+        history.retain(|_, samples| {
+            let mut kept: Vec<Value> = iter(samples).unwrap_or_default();
+            kept.retain(|s| s[0].as_f64().is_some_and(|t| t >= oldest));
+            let key = |s: &Value| (s[0].as_f64(), s[1].as_f64(), s[2].as_f64());
+            kept.sort_by(|a, b| key(a).partial_cmp(&key(b)).map_or(Ordering::Equal, |o| o));
+            *samples = Value::Array(kept);
+            samples.as_array().is_some_and(|kept| !kept.is_empty())
+        });
+        let text = dumps(&Value::Object(history.clone()));
+        // Like the original, a history that cannot be written is not an error.
+        let _ = path
+            .parent()
+            .map_or(Ok(()), std::fs::create_dir_all)
+            .and_then(|()| std::fs::write(path, text));
+        for entry in entries.as_array_mut().into_iter().flatten() {
+            let (live, service) = (entry.get("source") == Some(&json!("live")), entry.clone());
+            for w in entry
+                .get_mut("windows")
+                .and_then(Value::as_array_mut)
+                .into_iter()
+                .flatten()
+            {
+                if let Value::Object(map) = w {
+                    map.shift_remove("projection");
+                }
+                let reset = w
+                    .get("resets_at")
+                    .and_then(|r| r.as_i64().map(Num::Int).or(r.as_f64().map(Num::Float)));
+                if let (true, Some(reset)) = (live, reset) {
+                    let samples = history
+                        .get(&window_key(service.clone(), w.clone())?)
+                        .cloned();
+                    let projection = project(samples.unwrap_or_else(|| json!([])), now, reset)?;
+                    if let (false, Value::Object(map)) = (projection.is_null(), w) {
+                        map.insert("projection".into(), projection);
+                    }
+                }
+            }
+        }
+        Ok(())
     }
-    Ok(())
 }
 
 /// Port of `record_and_project` (`limits_watch.py:90`), on the default history file. Through

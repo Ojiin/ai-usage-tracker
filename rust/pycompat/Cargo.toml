@@ -1,0 +1,14 @@
+[package]
+name = "pycompat"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "Python semantics shared by the Rust ports of AI Usage Tracker"
+
+[dependencies]
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+serde = "1"
+serde_json = { version = "1", features = ["preserve_order", "float_roundtrip", "unbounded_depth"] }
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
