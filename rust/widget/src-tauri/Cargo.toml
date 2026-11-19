@@ -28,6 +28,9 @@ serde_json = { version = "1", features = ["preserve_order", "float_roundtrip"] }
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
 # The ported core. Only src/core.rs may call these crates.
 limits-watch-rs = { path = "../../limits-watch-rs" }
+tracker-rs = { path = "../../tracker-rs" }
+api-billing-rs = { path = "../../api-billing-rs" }
+openai-analytics-rs = { path = "../../openai-analytics-rs" }
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.56"

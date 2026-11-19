@@ -14,7 +14,7 @@ use crate::pynum::Num;
 use chrono::{DateTime, Datelike, Duration, Utc};
 pub use native::{PROVIDERS, api_usage, api_usage_at, paged, set_balance_in, store};
 use pycompat::{get, iso_micros, item, no_attr, py_repr, quote_plus, read_json, round_to};
-use pycompat::{str_of, to_float, truthy, ty, write_json_indented};
+use pycompat::{str_of, sum_floats, to_float, truthy, ty, write_json_indented};
 use serde_json::{Map, Value, json};
 use std::path::{Path, PathBuf};
 
@@ -110,12 +110,18 @@ pub fn estimate_balance(
     }
     let as_of = item(&entry, "as_of")?;
     let since_day: String = str_of(as_of).chars().take(10).collect();
-    let mut spent = Num::Int(0);
+    let mut costs = Vec::new();
     for (day, cost) in plain_dict(&daily).ok_or_else(|| no_attr(&daily, "items"))? {
         if !day.is_empty() && *day >= since_day {
-            spent = spent + num(cost)?;
+            costs.push(num(cost)?);
         }
     }
+    // Python's `sum`: plain while every cost is an int, compensated once they are floats.
+    let mut spent = if costs.iter().any(|c| matches!(c, Num::Float(_))) {
+        Num::Float(sum_floats(costs.iter().map(|c| c.f())))
+    } else {
+        costs.iter().fold(Num::Int(0), |sum, c| sum + *c)
+    };
     if let Some(baseline) = entry.get("day_baseline").filter(|b| truthy(b)) {
         spent = spent - num(baseline)?;
     }
@@ -282,17 +288,18 @@ pub mod native {
         let day = |b: &Value| bucket_day(b.clone()).map(Option::unwrap_or_default);
         let [mut daily, mut tokens, mut models] = [Map::new(), Map::new(), Map::new()];
         for bucket in paged(urls[0], &cost, headers, provider, fetch)? {
-            let mut total = 0.0;
+            let mut amounts = Vec::new();
             for result in results(&bucket) {
                 let amount = &result["amount"];
                 let amount =
                     plain_dict(amount).map_or(amount, |a| a.get("value").unwrap_or(&Value::Null));
-                total += if truthy(amount) {
+                amounts.push(if truthy(amount) {
                     to_float(amount)?
                 } else {
                     0.0
-                };
+                });
             }
+            let total = sum_floats(amounts);
             let spent = daily.entry(day(&bucket)?).or_insert(json!(0.0));
             *spent = json!(spent.as_f64().unwrap_or(0.0) + total / per_dollar);
         }
@@ -467,8 +474,13 @@ pub mod native {
             let days = daily
                 .iter()
                 .filter(|(d, _)| !d.is_empty() && d.as_str() >= start);
-            let add = |sum, (_, v): (_, &Value)| sum + Num::Float(v.as_f64().unwrap_or(0.0));
-            rounded(days.fold(Num::Int(0), add), 4)
+            let costs: Vec<f64> = days.map(|(_, v)| v.as_f64().unwrap_or(0.0)).collect();
+            let sum = if costs.is_empty() {
+                Num::Int(0)
+            } else {
+                Num::Float(sum_floats(costs))
+            };
+            rounded(sum, 4)
         };
         let round4 = |v: &Value| json!(round_to(v.as_f64().unwrap_or(0.0), 4));
         let mut days: Vec<_> = daily.iter().filter(|(d, _)| !d.is_empty()).collect();

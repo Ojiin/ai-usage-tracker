@@ -34,19 +34,15 @@ npm run dev     # run from source, rebuilding on change
 npm test        # the Rust unit tests
 ```
 
-> **Before shipping: the exe must not need Python, and today it does.** The core crates under
-> `rust/` still carry their PyO3 bridge, and the widget links `limits-watch-rs`. Built for
-> `x86_64-pc-windows-gnu` on Linux, both the debug and the release exe import `python3.dll`,
-> so they will not start on a PC that has no `python3.dll` on its path; see
-> [Verification](#verification). The MSVC build could not be tried here: after `npm run build`,
-> run `dumpbin /dependents src-tauri\target\release\AIUsageTracker.exe` and look for
-> `python3.dll`. The fix belongs in the core crates, not here: make `pyo3` an optional feature
-> that only the bridge build turns on, so `lib.rs`'s `#[pymodule]` is not compiled into the app.
-> Until then the build may also want a Python installation for PyO3's build script.
+The exe needs no Python: the core crates under `rust/` are plain Rust libraries. Cross-built for
+`x86_64-pc-windows-gnu` on Linux, the release exe imports only Windows system DLLs and
+`WebView2Loader.dll` (`objdump -p`). The MSVC build could not be tried here: after
+`npm run build`, `dumpbin /dependents src-tauri\target\release\AIUsageTracker.exe` should list no
+`python3.dll`.
 
 ### Run it on sample data
 
-Until the core is wired (below), and whenever you work on the page, set `AIUT_FAKE_DATA` to a
+Whenever you work on the page, set `AIUT_FAKE_DATA` to a
 file holding what `tracker.collect()` returns:
 
 ```
@@ -65,8 +61,7 @@ npm run dev
 
 In this mode times are moved to "now" so countdowns run, nothing is read from your real logs,
 no alert state is written to `%LOCALAPPDATA%\AIUsageTracker`, and "Set API balance…" saves
-nothing. Without the variable the widget shows `Scan failed: tracker core not wired; set
-AIUT_FAKE_DATA` until `core.rs` is wired.
+nothing. Without the variable the widget scans your real logs, as the Python widget did.
 
 ## What moved where
 
@@ -122,23 +117,19 @@ first launch. The webview's own cache goes to `%LOCALAPPDATA%\AIUsageTracker\web
 
 ## The seam to the core: `src-tauri/src/core.rs`
 
-`core.rs` is the only file that calls the ported crates. Wired today: `limits-watch-rs`
-(`store`, `due_alerts`, `pace_text`). Each function still waiting is marked `TODO(core)` and
-names the call it expects; wiring one means replacing its body with that call and adding the
-crate to `Cargo.toml`. The fake-data branch stays.
+`core.rs` is the only file that calls the ported crates. Unless `AIUT_FAKE_DATA` is set, each
+function there is one call:
 
-| `core.rs` function | waits for |
+| `core.rs` function | calls |
 |---|---|
-| `collect(log) -> Result<Value, String>` | `tracker_rs::port::native::collect(log: &mut dyn FnMut(&str)) -> Result<Value, String>` |
-| `write_dashboard(&data, &path) -> Result<(), String>` | `tracker_rs::port::native::write_dashboard(data: &Value, out_path: &Path) -> Result<(), String>` |
-| `working_now() -> Result<Value, String>` | `tracker_rs::port::native::working_now() -> Result<Value, String>` (`{"Claude Code": n, "Codex": n}`) |
-| `working_details() -> Result<Vec<Value>, String>` | `tracker_rs::port::native::working_details() -> Result<Vec<Value>, String>` |
-| `describe_session(&info) -> Result<String, String>` | `tracker_rs::port::native::describe_session(info: &Value) -> Result<String, String>` |
-| `providers() -> Vec<String>` | `api_billing_rs::port::native::providers() -> Vec<String>` (`list(PROVIDERS)`) |
-| `utc_day(now) -> String` | `api_billing_rs::port::native::utc_day(now: f64) -> String` |
-| `set_balance(provider, amount, today_spend) -> Result<(), String>` | `api_billing_rs::port::native::set_balance(provider: &str, amount: Option<f64>, today_spend: Option<f64>) -> Result<(), String>` |
+| `collect(log)` | `tracker_rs::port::native::Dirs::from_env().collect(log, api_usage, openai)`, with `api_billing_rs::port::native::api_usage` and `openai_analytics_rs::port::native::collect` |
+| `write_dashboard(&data, &path)` | `tracker_rs::port::native::write_dashboard` |
+| `working_now()`, `working_details()` | `Dirs::working_now(120, None)`, `Dirs::working_details(120, None)` |
+| `describe_session(&info)` | `tracker_rs::port::native::describe_session` |
+| `providers()`, `utc_day(now)`, `set_balance(..)` | `api_billing_rs::port::native::{PROVIDERS, utc_day, set_balance}` |
+| `store_dir()`, `pace_text(..)`, `due_alerts(..)` | `limits_watch_rs::port::native::{store, pace_text, due_alerts}` |
 
-Things the real `collect` must do, because the widget relies on them:
+What `collect` does that the widget relies on:
 
 - read `pricing.json` from the folder of the exe (`core::exe_dir()`, Python's `tracker.HERE`);
 - include `limits_watch.record_and_project`, as `tracker.collect` does, so windows carry
@@ -183,44 +174,14 @@ menu opens with the right items and ticks; "Always on top" is saved; "Set API ba
 40 px below the widget's top; the hover card opens under the label, clamped to the screen, and
 closes when the pointer leaves; `dashboard.html` appears next to the exe.
 
-**PyO3 note.** The Linux binary has no Python symbols (`nm -D` shows none). The
-`x86_64-pc-windows-gnu` exe imports `python3.dll` (`objdump -p`): 214 symbols in the debug
-build, 93 in the release build. The linker keeps `PyInit__native`, the `#[pymodule]` entry
-point in `limits-watch-rs/src/lib.rs`, and with it the whole bridge. The widget itself calls
-only `port::native::{store, due_alerts, pace_text}`, which use no Python. Do the `dumpbin`
-check above on the MSVC build.
-
-## Where it knowingly differs from the Python widget
-
-- **Width** is fixed at 290 CSS pixels; tkinter sized the window to its widest label. Height
-  follows the content as before.
-- **Default position** is still top-right of the primary screen, 300 px in and 60 px down, but
-  counted in the screen's scale, so the card stays on screen at 150%.
-- **Peek** starts when the pointer has stayed on the tray icon for 0.4 s. The Python widget
-  got a "pointer is resting" message from the shell and suppressed the plain tooltip; Tauri
-  reports the pointer arriving, and the icon's tooltip (same text) appears as well.
-- **Tray icon** has its own image (the Python one used the generic Windows application icon).
-  Tauri reports mouse clicks on it, not keyboard activation: Enter on the focused icon may do
-  nothing; its menu still opens.
-- **Alerts** are Windows toasts from `tauri-plugin-notification`, not balloons from the tray
-  icon, and titles and texts are no longer cut to 63 and 255 characters.
-- **Menus** are native menus with the same items in the same order; "Show tracker" is not bold.
-- **The position is saved** 0.4 s after the window stops moving, not at button release.
-- **"Set API balance…"** is a small page in its own window. It refuses `inf`, `nan`,
-  `1_000` and non-ASCII digits, which Python's `float()` accepted.
-- **Scan errors** show the Rust core's error text where Python showed the last line of its
-  traceback.
-- **"Start with Windows"** always registers the exe; there is no "running from source with
-  pythonw" case.
-- **Opening the dashboard** asks Windows to open the file; Python went through `webbrowser`.
-- **Sums** follow Python 3.12+ (see above); a widget frozen with an older Python could show a
-  cent less or more.
-- It needs the WebView2 runtime; the PyInstaller exe needed nothing.
+**Real scan.** With no `AIUT_FAKE_DATA` and `HOME` set to the fixture home that
+`rust/tracker-rs/fixture/make_home.py` builds, the widget under xvfb scans those logs, shows
+the totals and limits, and writes `dashboard.html` next to the binary.
 
 ## Manual test checklist (Windows)
 
-None of this could be run on Linux. Start with sample data (`AIUT_FAKE_DATA`, above) unless
-the core is wired.
+None of this could be run on Linux. Sample data (`AIUT_FAKE_DATA`, above) shows every part of
+the card at once; without it the widget scans your real logs.
 
 Start-up and window
 
@@ -263,7 +224,7 @@ Working sessions
 
 - [ ] With a Claude Code or Codex session running, a green "● N working" shows within 30 s;
       hovering it opens the card below the label (above it near the bottom of the screen),
-      inside the screen; it closes when the pointer leaves the label. (Needs the core wired, or
+      inside the screen; it closes when the pointer leaves the label. (Needs working sessions, or
       the fixture.)
 
 Limits, alerts, countdown
@@ -292,4 +253,4 @@ Set API balance…
 
 - [ ] Opens a small always-on-top dialog 40 px below the widget's top-left. "abc" → "Enter a
       number, e.g. 25.00"; `$1,234.50` is accepted; Enter saves, Esc and the window's ✕ cancel;
-      after Save or Clear the widget rescans. (Saving really needs the core wired.)
+      after Save or Clear the widget rescans. (Sample data saves nothing.)

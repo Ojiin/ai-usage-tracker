@@ -71,6 +71,25 @@ follows it.
 
 After changing the code, run `build.bat` to rebuild the exe.
 
+## Rust version (in progress)
+
+The app is being rewritten in Rust under [`rust/`](rust), with
+[rust-anything](https://github.com/erkamyaman/rust-anything): each Python module was recorded,
+ported and checked against its recording. The Python files stay as the reference until the
+Rust widget has been tested on Windows.
+
+- `rust/app` builds `tracker`, the command line (`python tracker.py` in Rust). It passes the
+  recorded runs of the original in [`rust/app-cases`](rust/app-cases/README.md).
+- `rust/widget` is the widget as a Tauri app; its [README](rust/widget/README.md) has the build
+  steps and a manual test checklist for Windows, where it has not been run yet.
+- `rust/tracker-rs`, `api-billing-rs`, `openai-analytics-rs`, `limits-watch-rs` and `pycompat`
+  are the libraries both use.
+
+```
+cd rust/app && cargo build --release        # target/release/tracker
+cd rust/widget && npm install && npm run build   # src-tauri/target/release/AIUsageTracker.exe
+```
+
 ## Dashboard only
 
 Double-click `run.bat`, or:

@@ -480,3 +480,19 @@ pub fn rglob(root: &std::path::Path, matches: &dyn Fn(&str) -> bool) -> Vec<std:
     }
     out
 }
+
+/// Python's `sum` of floats (3.12 and later): Neumaier's compensated sum, so the low bits lost
+/// by each addition are added back at the end.
+pub fn sum_floats(items: impl IntoIterator<Item = f64>) -> f64 {
+    let (mut sum, mut lost) = (0.0_f64, 0.0_f64);
+    for x in items {
+        let total = sum + x;
+        lost += if sum.abs() >= x.abs() {
+            (sum - total) + x
+        } else {
+            (x - total) + sum
+        };
+        sum = total;
+    }
+    if lost.is_finite() { sum + lost } else { sum }
+}

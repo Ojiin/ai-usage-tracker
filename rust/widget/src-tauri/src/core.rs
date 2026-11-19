@@ -4,12 +4,10 @@
 //! widget goes through the functions here, so wiring a newly ported crate is a change to one
 //! function body in this file.
 //!
-//! What is wired today: `limits-watch-rs` (`store_dir`, `due_alerts`, `pace_text`).
-//! What is not: everything from `tracker-rs` and `api-billing-rs`. Each such function is marked
-//! `TODO(core)` with the call it is waiting for. Until then it answers from the JSON file named
-//! by `AIUT_FAKE_DATA`, or returns an error the widget shows in its status line.
-//!
-//! Fake-data mode is permanent: it is how the page is developed and screenshotted.
+//! Every function calls the ported crates (`tracker-rs`, `api-billing-rs`,
+//! `openai-analytics-rs`, `limits-watch-rs`), unless `AIUT_FAKE_DATA` names a JSON file: then
+//! the scan is read from that file. Fake-data mode is how the page is developed and
+//! screenshotted.
 //!
 //! ```text
 //! AIUT_FAKE_DATA=fixtures/sample-full.json npm run dev
@@ -21,9 +19,11 @@
 //! In this mode nothing is read from the real logs and no alert state is written to the real
 //! store folder.
 
+use api_billing_rs::port::native as billing;
 use limits_watch_rs::port::native as limits;
 use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
+use tracker_rs::port::native as tracker;
 
 /// The environment variable that turns fake-data mode on.
 pub const FAKE_DATA: &str = "AIUT_FAKE_DATA";
@@ -45,8 +45,11 @@ fn fake() -> Option<Result<Value, String>> {
     Some(read)
 }
 
-fn not_wired(what: &str) -> String {
-    format!("{what} core not wired; set {FAKE_DATA}")
+/// How long a session counts as working after its log was last written (`tracker.working_now`).
+const WORKING_WINDOW: i64 = 120;
+
+fn dirs() -> tracker::Dirs {
+    tracker::Dirs::from_env()
 }
 
 fn unix_now() -> f64 {
@@ -86,8 +89,6 @@ pub fn dashboard_path() -> PathBuf {
 /// The real one must read pricing.json from [`exe_dir`] and already includes
 /// `limits_watch.record_and_project`, as `tracker.collect` does.
 pub fn collect(log: &mut dyn FnMut(&str)) -> Result<Value, String> {
-    // TODO(core): wire to tracker_rs::port::native::collect(log) -> Result<Value, String>
-    let _ = &log;
     match fake() {
         Some(data) => data.map(|mut data| {
             if let Some(map) = data.as_object_mut() {
@@ -96,15 +97,16 @@ pub fn collect(log: &mut dyn FnMut(&str)) -> Result<Value, String> {
             rebase(&mut data, unix_now());
             data
         }),
-        None => Err(not_wired("tracker")),
+        None => dirs().collect(log, &mut |log| billing::api_usage(log), &mut |log| {
+            openai_analytics_rs::port::native::collect(log)
+        }),
     }
 }
 
 /// `tracker.write_dashboard(data, out_path)`: template.html with the scan data put in.
 pub fn write_dashboard(data: &Value, path: &Path) -> Result<(), String> {
-    // TODO(core): wire to tracker_rs::port::native::write_dashboard(data: &Value, out_path: &Path) -> Result<(), String>
     if fake_path().is_none() {
-        return Err(not_wired("dashboard"));
+        return tracker::write_dashboard(data, path).map_err(|error| format!("OSError: {error}"));
     }
     let template = include_str!("../../../../template.html");
     let json = serde_json::to_string(data).map_err(|error| format!("ValueError: {error}"))?;
@@ -114,7 +116,9 @@ pub fn write_dashboard(data: &Value, path: &Path) -> Result<(), String> {
 
 /// `tracker.working_now()`: `{"Claude Code": n, "Codex": n}`, the sessions working right now.
 pub fn working_now() -> Result<Value, String> {
-    // TODO(core): wire to tracker_rs::port::native::working_now() -> Result<Value, String>
+    if fake_path().is_none() {
+        return dirs().working_now(WORKING_WINDOW, None);
+    }
     let mut active = json!({"Claude Code": 0, "Codex": 0});
     for info in working_details()? {
         if let Some(tool) = info.get("tool").and_then(Value::as_str) {
@@ -126,24 +130,22 @@ pub fn working_now() -> Result<Value, String> {
 
 /// `tracker.working_details()`: one dict per working session, newest first.
 pub fn working_details() -> Result<Vec<Value>, String> {
-    // TODO(core): wire to tracker_rs::port::native::working_details() -> Result<Vec<Value>, String>
     match fake() {
         Some(data) => Ok(data?
             .get("_working_details")
             .and_then(Value::as_array)
             .cloned()
             .unwrap_or_default()),
-        None => Err(not_wired("tracker")),
+        None => dirs().working_details(WORKING_WINDOW, None),
     }
 }
 
 /// `tracker.describe_session(info)`: "Opus 5.5 med working on scripts" plus detail lines,
 /// separated by newlines.
 pub fn describe_session(info: &Value) -> Result<String, String> {
-    // TODO(core): wire to tracker_rs::port::native::describe_session(info: &Value) -> Result<String, String>
     match info.get("_describe").and_then(Value::as_str) {
         Some(text) => Ok(text.to_string()),
-        None => Err(not_wired("tracker")),
+        None => tracker::describe_session(info),
     }
 }
 
@@ -175,16 +177,17 @@ pub fn due_alerts(
 
 /// `list(api_billing.PROVIDERS)`: the choices in "Set API balance…".
 pub fn providers() -> Vec<String> {
-    // TODO(core): wire to api_billing_rs::port::native::providers() -> Vec<String>
-    vec!["Anthropic".into(), "OpenAI".into()]
+    billing::PROVIDERS
+        .iter()
+        .map(|(name, _, _)| (*name).to_string())
+        .collect()
 }
 
 /// `api_billing.utc_day(datetime.now().astimezone())`: today's date in UTC, the key of the
 /// providers' daily reports.
 pub fn utc_day(now: f64) -> String {
-    // TODO(core): wire to api_billing_rs::port::native::utc_day(now: f64) -> String
     chrono::DateTime::from_timestamp(now.floor() as i64, 0)
-        .map(|at| at.format("%Y-%m-%d").to_string())
+        .map(billing::utc_day)
         .unwrap_or_default()
 }
 
@@ -194,12 +197,10 @@ pub fn set_balance(
     amount: Option<f64>,
     today_spend: Option<f64>,
 ) -> Result<(), String> {
-    // TODO(core): wire to api_billing_rs::port::native::set_balance(provider: &str, amount: Option<f64>, today_spend: Option<f64>) -> Result<(), String>
-    let _ = (provider, amount, today_spend);
-    match fake_path() {
-        Some(_) => Ok(()), // the sample file is never changed
-        None => Err(not_wired("billing")),
+    if fake_path().is_none() {
+        billing::set_balance(provider, amount, today_spend);
     }
+    Ok(()) // the sample file is never changed
 }
 
 // --- fake-data mode only --------------------------------------------------------
