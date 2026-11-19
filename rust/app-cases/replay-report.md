@@ -1,6 +1,6 @@
 # App replay
 
-Build: `/home/user/ai-usage-tracker/rust/app/target/debug/tracker`
+Build: `rust/app/target/release/tracker`
 
 Passed: 10/10
 

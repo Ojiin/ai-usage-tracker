@@ -22,11 +22,7 @@ use std::io::{BufRead, BufReader, Read, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-// The limits_watch port, compiled in from its source: as a dependency its Python module entry
-// point would collide with this crate's while both are bridged.
-#[allow(dead_code, unused_imports)]
-#[path = "../../limits-watch-rs/src/port.rs"]
-mod limits_watch;
+use limits_watch_rs::port as limits_watch;
 
 const FIELDS: [&str; 4] = ["input", "cache_write", "cache_read", "output"];
 const TAIL: i64 = 512 * 1024;
@@ -1932,7 +1928,11 @@ pub mod native {
             let now = chrono::Utc::now().timestamp();
             data["now_epoch"] = json!(now);
             let history = self.store.join("limits_history.json");
-            limits_watch::record_and_project_at(&mut data["plan_limits"], Num::Int(now), &history)?;
+            limits_watch::record_and_project_at(
+                &mut data["plan_limits"],
+                limits_watch_rs::pynum::Num::Int(now),
+                &history,
+            )?;
             data["warnings"] = json!(warnings);
             Ok(data)
         }
