@@ -213,3 +213,57 @@ pub fn py_repr(v: &Value) -> String {
         scalar => py_str(scalar),
     }
 }
+
+/// Python's `str(v)` for any value: text as it is, everything else as `repr` writes it.
+pub fn str_of(v: &Value) -> String {
+    v.as_str().map_or_else(|| py_repr(v), str::to_string)
+}
+
+/// The `AttributeError` Python raises for `v.name`.
+pub fn no_attr(v: &Value, name: &str) -> String {
+    let ty = ty(v);
+    format!("AttributeError: '{ty}' object has no attribute '{name}'")
+}
+
+/// Python's `v["key"]` for a string key, with the error each type raises.
+pub fn item<'a>(v: &'a Value, key: &str) -> Result<&'a Value, String> {
+    match v {
+        Value::Object(m) if !m.contains_key("$num") => {
+            m.get(key).ok_or_else(|| format!("KeyError: {key}"))
+        }
+        Value::String(_) => Err("TypeError: string indices must be integers, not 'str'".into()),
+        Value::Array(_) => {
+            Err("TypeError: list indices must be integers or slices, not str".into())
+        }
+        other => Err(format!(
+            "TypeError: '{}' object is not subscriptable",
+            ty(other)
+        )),
+    }
+}
+
+/// `urllib.parse.quote_plus(text)`.
+pub fn quote_plus(text: &str) -> String {
+    let quote = |b: u8| match b {
+        b' ' => "+".to_string(),
+        b if b.is_ascii_alphanumeric() || b"_.-~".contains(&b) => char::from(b).to_string(),
+        b => format!("%{b:02X}"),
+    };
+    text.bytes().map(quote).collect()
+}
+
+/// `json.loads(path.read_text(encoding="utf-8"))`; `None` when the file cannot be read or is
+/// not JSON.
+pub fn read_json(path: &std::path::Path) -> Option<Value> {
+    serde_json::from_str(&std::fs::read_to_string(path).ok()?).ok()
+}
+
+/// `path.write_text(json.dumps(data, indent=1))`, creating the parent folders first.
+pub fn write_json_indented(path: &std::path::Path, data: &Value) -> io::Result<()> {
+    let mut text = Vec::new();
+    let indent = serde_json::ser::PrettyFormatter::with_indent(b" ");
+    let mut ser = serde_json::Serializer::with_formatter(&mut text, indent);
+    data.serialize(&mut ser)?;
+    path.parent().map_or(Ok(()), std::fs::create_dir_all)?;
+    std::fs::write(path, text)
+}

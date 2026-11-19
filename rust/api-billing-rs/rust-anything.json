@@ -25,96 +25,6 @@
       "uses_instanceof": false
     },
     {
-      "name": "utc_day",
-      "file": "api_billing.py",
-      "line": 40,
-      "params": [
-        {
-          "name": "dt",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        }
-      ],
-      "returns": "unknown",
-      "is_async": false,
-      "is_generator": false,
-      "type_params": [],
-      "uses_instanceof": false
-    },
-    {
-      "name": "load_json",
-      "file": "api_billing.py",
-      "line": 44,
-      "params": [
-        {
-          "name": "path",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        }
-      ],
-      "returns": "unknown",
-      "is_async": false,
-      "is_generator": false,
-      "type_params": [],
-      "uses_instanceof": false
-    },
-    {
-      "name": "save_json",
-      "file": "api_billing.py",
-      "line": 51,
-      "params": [
-        {
-          "name": "path",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        },
-        {
-          "name": "data",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        }
-      ],
-      "returns": "unknown",
-      "is_async": false,
-      "is_generator": false,
-      "type_params": [],
-      "uses_instanceof": false
-    },
-    {
-      "name": "get_json",
-      "file": "api_billing.py",
-      "line": 63,
-      "params": [
-        {
-          "name": "url",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        },
-        {
-          "name": "headers",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        },
-        {
-          "name": "provider",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        }
-      ],
-      "returns": "unknown",
-      "is_async": false,
-      "is_generator": false,
-      "type_params": [],
-      "uses_instanceof": false
-    },
-    {
       "name": "bucket_day",
       "file": "api_billing.py",
       "line": 87,
@@ -137,66 +47,6 @@
       "file": "api_billing.py",
       "line": 95,
       "params": [],
-      "returns": "unknown",
-      "is_async": false,
-      "is_generator": false,
-      "type_params": [],
-      "uses_instanceof": false
-    },
-    {
-      "name": "anthropic_reports",
-      "file": "api_billing.py",
-      "line": 100,
-      "params": [
-        {
-          "name": "key",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        },
-        {
-          "name": "cost_start",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        },
-        {
-          "name": "usage_start",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        }
-      ],
-      "returns": "unknown",
-      "is_async": false,
-      "is_generator": false,
-      "type_params": [],
-      "uses_instanceof": false
-    },
-    {
-      "name": "openai_reports",
-      "file": "api_billing.py",
-      "line": 124,
-      "params": [
-        {
-          "name": "key",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        },
-        {
-          "name": "cost_start",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        },
-        {
-          "name": "usage_start",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        }
-      ],
       "returns": "unknown",
       "is_async": false,
       "is_generator": false,
@@ -257,57 +107,57 @@
       "is_generator": false,
       "type_params": [],
       "uses_instanceof": false
-    },
-    {
-      "name": "summarize",
-      "file": "api_billing.py",
-      "line": 181,
-      "params": [
-        {
-          "name": "provider",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        },
-        {
-          "name": "daily",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        },
-        {
-          "name": "tokens",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        },
-        {
-          "name": "models",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        },
-        {
-          "name": "now",
-          "ts_type": "number",
-          "optional": false,
-          "rest": false
-        }
-      ],
-      "returns": "unknown",
-      "is_async": false,
-      "is_generator": false,
-      "type_params": [],
-      "uses_instanceof": false
     }
   ],
   "classes": [],
   "js_only": [
     {
+      "name": "utc_day",
+      "file": "api_billing.py",
+      "line": 40,
+      "reason": "takes a datetime, which cannot cross the bridge; ported in native"
+    },
+    {
+      "name": "load_json",
+      "file": "api_billing.py",
+      "line": 44,
+      "reason": "takes a Path, which cannot cross the bridge; ported in native"
+    },
+    {
+      "name": "save_json",
+      "file": "api_billing.py",
+      "line": 51,
+      "reason": "takes a Path, which cannot cross the bridge; ported in native"
+    },
+    {
+      "name": "get_json",
+      "file": "api_billing.py",
+      "line": 63,
+      "reason": "raises ApiError, a class of the module that the bridge cannot raise; ported in native"
+    },
+    {
       "name": "paged",
       "file": "api_billing.py",
       "line": 75,
       "reason": "generator: returns a lazy iterator"
+    },
+    {
+      "name": "anthropic_reports",
+      "file": "api_billing.py",
+      "line": 100,
+      "reason": "raises ApiError, a class of the module that the bridge cannot raise; ported in native"
+    },
+    {
+      "name": "openai_reports",
+      "file": "api_billing.py",
+      "line": 124,
+      "reason": "raises ApiError, a class of the module that the bridge cannot raise; ported in native"
+    },
+    {
+      "name": "summarize",
+      "file": "api_billing.py",
+      "line": 181,
+      "reason": "takes a datetime, which cannot cross the bridge; ported in native"
     },
     {
       "name": "api_usage",

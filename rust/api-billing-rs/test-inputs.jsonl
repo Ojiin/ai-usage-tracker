@@ -1,24 +1,11 @@
-{"fn": "load_json", "args": [{"$repr": "PosixPath"}]}
-{"fn": "get_json", "args": ["https://api.anthropic.com/v1/organizations/cost_report?starting_at=2026-10-20T00%3A00%3A00Z&bucket_width=1d&limit=31", {"x-api-key": "sk-ant-admin-test", "anthropic-version": "2023-06-01", "User-Agent": "AIUsageTracker/1.0"}, "Anthropic"]}
 {"fn": "bucket_day", "args": [{"starting_at": "2026-11-18T00:00:00Z", "results": [{"amount": "250.00", "currency": "USD"}]}]}
-{"fn": "get_json", "args": ["https://api.anthropic.com/v1/organizations/cost_report?starting_at=2026-10-20T00%3A00%3A00Z&bucket_width=1d&limit=31&page=p2", {"x-api-key": "sk-ant-admin-test", "anthropic-version": "2023-06-01", "User-Agent": "AIUsageTracker/1.0"}, "Anthropic"]}
 {"fn": "bucket_day", "args": [{"starting_at": "2026-11-19T00:00:00Z", "results": [{"amount": "100.00", "currency": "USD"}, {"amount": "50.50", "currency": "USD"}]}]}
-{"fn": "get_json", "args": ["https://api.anthropic.com/v1/organizations/usage_report/messages?starting_at=2026-10-20T00%3A00%3A00Z&bucket_width=1d&limit=31&group_by%5B%5D=model", {"x-api-key": "sk-ant-admin-test", "anthropic-version": "2023-06-01", "User-Agent": "AIUsageTracker/1.0"}, "Anthropic"]}
 {"fn": "bucket_day", "args": [{"starting_at": "2026-11-19T00:00:00Z", "results": [{"model": "claude-opus-5-5", "uncached_input_tokens": 1000, "cache_read_input_tokens": 5000, "cache_creation": {"ephemeral_1h_input_tokens": 200, "ephemeral_5m_input_tokens": 300}, "output_tokens": 400}]}]}
 {"fn": "new_tokens", "args": []}
-{"fn": "summarize", "args": ["Anthropic", {"2026-11-18": 2.5, "2026-11-19": 1.505}, {"2026-11-19": {"input": 1000, "cache_write": 500, "cache_read": 5000, "output": 400, "requests": 0}}, {"claude-opus-5-5": {"input": 1000, "cache_write": 500, "cache_read": 5000, "output": 400, "requests": 0}}, {"$repr": "datetime"}]}
-{"fn": "utc_day", "args": [{"$repr": "datetime"}]}
 {"fn": "estimate_balance", "args": [null, {"2026-11-18": 2.5, "2026-11-19": 1.505}]}
-{"fn": "save_json", "args": [{"$repr": "PosixPath"}, {"Anthropic": {"daily": {"2026-11-18": 2.5, "2026-11-19": 1.505}, "today": 1.505, "month": 4.005, "last30": 4.005, "tokens_30d": {"input": 1000, "cache_write": 500, "cache_read": 5000, "output": 400, "requests": 0}, "models": [{"model": "claude-opus-5-5", "input": 1000, "cache_write": 500, "cache_read": 5000, "output": 400, "requests": 0, "total": 6900}], "as_of": "2026-11-19T20:41:22Z"}}]}
 {"fn": "set_balance", "args": ["Anthropic", {"$float": "20.0"}, {"$float": "1.0"}]}
-{"fn": "save_json", "args": [{"$repr": "PosixPath"}, {"Anthropic": {"amount": {"$float": "20.0"}, "as_of": "2026-11-19T20:41:22Z", "day_baseline": {"$float": "1.0"}}}]}
-{"fn": "estimate_balance", "args": [{"amount": {"$float": "20.0"}, "as_of": "2026-11-19T20:41:22Z", "day_baseline": {"$float": "1.0"}}, {"2026-11-18": 2.5, "2026-11-19": 1.505}]}
+{"fn": "estimate_balance", "args": [{"amount": {"$float": "20.0"}, "as_of": "2026-11-19T20:55:07Z", "day_baseline": {"$float": "1.0"}}, {"2026-11-18": 2.5, "2026-11-19": 1.505}]}
 {"fn": "set_balance", "args": ["Anthropic", null]}
-{"fn": "save_json", "args": [{"$repr": "PosixPath"}, {}]}
-{"fn": "get_json", "args": ["https://api.openai.com/v1/organization/costs?start_time=1792454400&bucket_width=1d&limit=31", {"Authorization": "Bearer sk-admin-test", "User-Agent": "AIUsageTracker/1.0"}, "OpenAI"]}
 {"fn": "bucket_day", "args": [{"start_time": 1795046400, "results": [{"amount": {"value": 1.25, "currency": "usd"}}]}]}
-{"fn": "get_json", "args": ["https://api.openai.com/v1/organization/usage/completions?start_time=1792454400&bucket_width=1d&limit=31&group_by=model", {"Authorization": "Bearer sk-admin-test", "User-Agent": "AIUsageTracker/1.0"}, "OpenAI"]}
 {"fn": "bucket_day", "args": [{"start_time": 1795046400, "results": [{"model": "gpt-6.1", "input_tokens": 900, "input_cached_tokens": 300, "output_tokens": 100, "num_model_requests": 7}]}]}
-{"fn": "summarize", "args": ["OpenAI", {"2026-11-19": 1.25}, {"2026-11-19": {"input": 600, "cache_write": 0, "cache_read": 300, "output": 100, "requests": 7}}, {"gpt-6.1": {"input": 600, "cache_write": 0, "cache_read": 300, "output": 100, "requests": 7}}, {"$repr": "datetime"}]}
 {"fn": "estimate_balance", "args": [null, {"2026-11-19": 1.25}]}
-{"fn": "save_json", "args": [{"$repr": "PosixPath"}, {"OpenAI": {"daily": {"2026-11-19": 1.25}, "today": 1.25, "month": 1.25, "last30": 1.25, "tokens_30d": {"input": 600, "cache_write": 0, "cache_read": 300, "output": 100, "requests": 7}, "models": [{"model": "gpt-6.1", "input": 600, "cache_write": 0, "cache_read": 300, "output": 100, "requests": 7, "total": 1000}], "as_of": "2026-11-19T20:41:22Z"}}]}
