@@ -390,7 +390,9 @@ pub fn windows_name(text: &str) -> String {
 
 /// `PurePosixPath(text).name`.
 pub fn posix_name(text: &str) -> String {
-    let name = text.split('/').rfind(|part| !part.is_empty() && *part != ".");
+    let name = text
+        .split('/')
+        .rfind(|part| !part.is_empty() && *part != ".");
     name.unwrap_or("").to_string()
 }
 
