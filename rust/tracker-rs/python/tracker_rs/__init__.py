@@ -111,6 +111,5 @@ claude_live = _native.claude_live
 codex_log_limits = _native.codex_log_limits
 load_pricing = _native.load_pricing
 cost_of = _native.cost_of
-aggregate = _native.aggregate
 
-__all__ = ['local_day', 'local_time', 'claude_tool_events', 'scan_commands', 'working_now', 'tail_rows', 'pretty_model', 'short_text', 'codex_titles', 'codex_db_working', 'claude_session_info', 'working_details', 'describe_session', 'scan_claude', 'scan_codex', 'to_epoch', 'pretty_plan', 'window_label', 'codex_live', 'codex_details', 'claude_live', 'codex_log_limits', 'load_pricing', 'cost_of', 'aggregate']
+__all__ = ['local_day', 'local_time', 'claude_tool_events', 'scan_commands', 'working_now', 'tail_rows', 'pretty_model', 'short_text', 'codex_titles', 'codex_db_working', 'claude_session_info', 'working_details', 'describe_session', 'scan_claude', 'scan_codex', 'to_epoch', 'pretty_plan', 'window_label', 'codex_live', 'codex_details', 'claude_live', 'codex_log_limits', 'load_pricing', 'cost_of']

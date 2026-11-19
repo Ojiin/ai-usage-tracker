@@ -12,7 +12,7 @@ crate-type = ["cdylib", "rlib"]
 pyo3 = { version = "0.30", features = ["extension-module", "abi3-py39"] }
 serde = "1"
 pycompat = { path = "../pycompat" }
-limits-watch-rs = { path = "../limits-watch-rs" }
+indexmap = "2"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
 rusqlite = { version = "0.37", features = ["bundled"] }
 zstd = "0.13"

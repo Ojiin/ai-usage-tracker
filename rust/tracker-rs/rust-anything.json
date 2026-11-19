@@ -453,37 +453,6 @@
       "is_generator": false,
       "type_params": [],
       "uses_instanceof": false
-    },
-    {
-      "name": "aggregate",
-      "file": "tracker.py",
-      "line": 709,
-      "params": [
-        {
-          "name": "records",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        },
-        {
-          "name": "pricing",
-          "ts_type": "unknown",
-          "optional": false,
-          "rest": false
-        },
-        {
-          "name": "events",
-          "ts_type": "unknown",
-          "optional": true,
-          "rest": false,
-          "default": "()"
-        }
-      ],
-      "returns": "unknown",
-      "is_async": false,
-      "is_generator": false,
-      "type_params": [],
-      "uses_instanceof": false
     }
   ],
   "classes": [],
@@ -525,6 +494,12 @@
       "reason": "calls its parameter `log`: a callable"
     },
     {
+      "name": "aggregate",
+      "file": "tracker.py",
+      "line": 709,
+      "reason": "the bridge cannot tell events=None, which fails, from the default (); its recorded cases are replayed by a cargo test instead"
+    },
+    {
       "name": "collect",
       "file": "tracker.py",
       "line": 771,
@@ -540,7 +515,7 @@
       "name": "build",
       "file": "tracker.py",
       "line": 800,
-      "reason": "runs collect, which needs the api_billing and openai_analytics ports; ported natively as native::collect + native::write_dashboard"
+      "reason": "runs collect, which needs the api_billing and openai_analytics ports; ported natively as native::Dirs::collect and native::write_dashboard"
     },
     {
       "name": "main",

@@ -326,7 +326,8 @@ fn pretty_plan(py: Python<'_>, raw: Bound<'_, PyAny>) -> PyResult<Py<PyAny>> {
         .and_then(|v| crate::pyconv::ToPy::to_py(&v, py))
 }
 
-fn window_label_inner(minutes: f64) -> Result<serde_json::Value, String> {
+fn window_label_inner(minutes: Bound<'_, PyAny>) -> Result<serde_json::Value, String> {
+    let minutes: crate::pynum::Num = crate::pyconv::FromPy::from_py(&minutes)?;
     let out = port::window_label(minutes)?;
     Ok(out)
 }
@@ -334,7 +335,7 @@ fn window_label_inner(minutes: f64) -> Result<serde_json::Value, String> {
 /// `window_label`.
 #[pyfunction]
 #[pyo3(name = "window_label", signature = (minutes))]
-fn window_label(py: Python<'_>, minutes: f64) -> PyResult<Py<PyAny>> {
+fn window_label(py: Python<'_>, minutes: Bound<'_, PyAny>) -> PyResult<Py<PyAny>> {
     window_label_inner(minutes)
         .map_err(error)
         .and_then(|v| crate::pyconv::ToPy::to_py(&v, py))
@@ -435,35 +436,6 @@ fn cost_of(
         .and_then(|v| crate::pyconv::ToPy::to_py(&v, py))
 }
 
-fn aggregate_inner(
-    records: Bound<'_, PyAny>,
-    pricing: Bound<'_, PyAny>,
-    events: Option<Bound<'_, PyAny>>,
-) -> Result<serde_json::Value, String> {
-    let records: serde_json::Value = crate::pyconv::FromPy::from_py(&records)?;
-    let pricing: serde_json::Value = crate::pyconv::FromPy::from_py(&pricing)?;
-    let events: Option<serde_json::Value> = match &events {
-        None => None,
-        Some(v) => Some(crate::pyconv::FromPy::from_py(v)?),
-    };
-    let out = port::aggregate(records, pricing, events)?;
-    Ok(out)
-}
-
-/// `aggregate`.
-#[pyfunction]
-#[pyo3(name = "aggregate", signature = (records, pricing, events=None))]
-fn aggregate(
-    py: Python<'_>,
-    records: Bound<'_, PyAny>,
-    pricing: Bound<'_, PyAny>,
-    events: Option<Bound<'_, PyAny>>,
-) -> PyResult<Py<PyAny>> {
-    aggregate_inner(records, pricing, events)
-        .map_err(error)
-        .and_then(|v| crate::pyconv::ToPy::to_py(&v, py))
-}
-
 #[pymodule]
 #[pyo3(name = "_native")]
 fn native_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
@@ -491,6 +463,5 @@ fn native_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(codex_log_limits, m)?)?;
     m.add_function(wrap_pyfunction!(load_pricing, m)?)?;
     m.add_function(wrap_pyfunction!(cost_of, m)?)?;
-    m.add_function(wrap_pyfunction!(aggregate, m)?)?;
     Ok(())
 }

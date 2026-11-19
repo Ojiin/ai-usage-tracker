@@ -283,16 +283,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "limits-watch-rs"
-version = "0.1.0"
-dependencies = [
- "pycompat",
- "pyo3",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "log"
 version = "0.4.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -603,7 +593,7 @@ name = "tracker-rs"
 version = "0.1.0"
 dependencies = [
  "chrono",
- "limits-watch-rs",
+ "indexmap",
  "pycompat",
  "pyo3",
  "rusqlite",

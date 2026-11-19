@@ -83,6 +83,9 @@ write(claude / "projects" / "-home-me-proj2" / "s2.jsonl", [
               input_tokens=7, output_tokens=3, cache_read_input_tokens=None),
     assistant("m9", [], ts="2025-12-31T12:00:00Z", model="mystery-model", cwd=None)], mtime=T0 - 100)
 write(claude / "projects" / "-home-me-proj2" / "old.jsonl", [assistant("m10", [], ts="2026-11-03T05:00:00Z")])
+# A row Python cannot take (a number where a folder name is expected): any call that reaches this very
+# old log fails, which keeps calls that read the clock and look back forever the same from day to day.
+write(claude / "projects" / "-old-archive" / "poison.jsonl", [{"type": "note", "cwd": 5}], mtime=T0 - 100_000_000)
 write(claude / "history.jsonl", [
     {"display": "/model opus", "timestamp": 1793523600000}, {"display": "fix the bug", "timestamp": 1793523600000},
     {"display": "/c/Users/me/file.txt is broken", "timestamp": 1793523600000}, {"display": "  /compact  ", "timestamp": 1793610000500},
@@ -150,6 +153,8 @@ write(codex / "session_index.jsonl", [{"id": UUID1, "thread_name": "Speed up imp
 (claude / ".credentials.json").write_text(json.dumps({"claudeAiOauth": {"accessToken": "expired-fixture", "expiresAt": 1000}}), encoding="utf-8")
 
 ms = T0 * 1000
+for name in ("state_4.sqlite", "state_5.sqlite", "state_x.sqlite", "thread_history_1.sqlite"):
+    (codex / name).unlink(missing_ok=True)  # so the script can be run again over the same folder
 for name in ("state_4.sqlite", "state_5.sqlite", "state_x.sqlite"):
     with contextlib.closing(sqlite3.connect(codex / name)) as db:
         db.execute("CREATE TABLE threads (id TEXT, history_mode TEXT, model TEXT, reasoning_effort TEXT, cwd TEXT, name TEXT, "

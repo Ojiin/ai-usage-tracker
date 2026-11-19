@@ -267,3 +267,214 @@ pub fn write_json_indented(path: &std::path::Path, data: &Value) -> io::Result<(
     path.parent().map_or(Ok(()), std::fs::create_dir_all)?;
     std::fs::write(path, text)
 }
+
+/// Python's `c.isspace()`: Unicode white space plus the separators U+001C to U+001F.
+pub fn is_space(c: char) -> bool {
+    c.is_whitespace() || ('\x1c'..='\x1f').contains(&c)
+}
+
+/// Python's `text.split()`: the words between runs of white space.
+pub fn split_ws(text: &str) -> Vec<&str> {
+    text.split(is_space).filter(|w| !w.is_empty()).collect()
+}
+
+/// Python's `text.splitlines()`: lines end at `\n`, `\r`, `\r\n`, `\v`, `\f`, U+001C to U+001E,
+/// U+0085, U+2028 and U+2029; there is no empty last line.
+pub fn splitlines(text: &str) -> Vec<&str> {
+    let ends = |c: char| "\n\r\x0b\x0c\x1c\x1d\x1e\u{85}\u{2028}\u{2029}".contains(c);
+    let (mut lines, mut rest) = (Vec::new(), text);
+    while let Some(at) = rest.find(ends) {
+        lines.push(&rest[..at]);
+        let end = if rest[at..].starts_with("\r\n") {
+            2
+        } else {
+            rest[at..].chars().next().map_or(1, char::len_utf8)
+        };
+        rest = &rest[at + end..];
+    }
+    if !rest.is_empty() {
+        lines.push(rest);
+    }
+    lines
+}
+
+/// Python's `text.capitalize()`: the first character in title case (`ß` gives `Ss`, the
+/// digraph `ǆ` gives `ǅ`), the rest lower case.
+pub fn capitalize(text: &str) -> String {
+    let mut chars = text.chars();
+    let title = match chars.next() {
+        None => return String::new(),
+        Some('Ǆ' | 'ǅ' | 'ǆ') => "ǅ".to_string(),
+        Some('Ǉ' | 'ǈ' | 'ǉ') => "ǈ".to_string(),
+        Some('Ǌ' | 'ǋ' | 'ǌ') => "ǋ".to_string(),
+        Some('Ǳ' | 'ǲ' | 'ǳ') => "ǲ".to_string(),
+        Some(first) => {
+            let upper: String = first.to_uppercase().collect();
+            let mut upper = upper.chars();
+            let head: String = upper.next().into_iter().collect();
+            head + &upper.as_str().to_lowercase()
+        }
+    };
+    title + &chars.as_str().to_lowercase()
+}
+
+/// `json.dumps(v)` byte for byte: `, ` and `: ` separators, text outside printable ASCII as
+/// `\uXXXX`, floats as `repr` writes them.
+pub fn dumps_ascii(v: &Value) -> String {
+    fn text(s: &str, out: &mut String) {
+        out.push('"');
+        for c in s.chars() {
+            match c {
+                '"' => out.push_str("\\\""),
+                '\\' => out.push_str("\\\\"),
+                '\n' => out.push_str("\\n"),
+                '\r' => out.push_str("\\r"),
+                '\t' => out.push_str("\\t"),
+                '\u{8}' => out.push_str("\\b"),
+                '\u{c}' => out.push_str("\\f"),
+                ' '..='~' => out.push(c),
+                c => {
+                    for unit in c.encode_utf16(&mut [0; 2]) {
+                        out.push_str(&format!("\\u{unit:04x}"));
+                    }
+                }
+            }
+        }
+        out.push('"');
+    }
+    fn write(v: &Value, out: &mut String) {
+        match v {
+            Value::String(s) => text(s, out),
+            Value::Array(a) => {
+                out.push('[');
+                for (i, x) in a.iter().enumerate() {
+                    out.push_str(if i == 0 { "" } else { ", " });
+                    write(x, out);
+                }
+                out.push(']');
+            }
+            Value::Object(m) => {
+                out.push('{');
+                for (i, (k, x)) in m.iter().enumerate() {
+                    out.push_str(if i == 0 { "" } else { ", " });
+                    text(k, out);
+                    out.push_str(": ");
+                    write(x, out);
+                }
+                out.push('}');
+            }
+            Value::Number(n) if n.is_f64() => out.push_str(&py_repr(v)),
+            scalar => out.push_str(&scalar.to_string()),
+        }
+    }
+    let mut out = String::new();
+    write(v, &mut out);
+    out
+}
+
+/// `PureWindowsPath(text).name`: the last folder or file name, without drive or share.
+pub fn windows_name(text: &str) -> String {
+    let path = text.replace('/', "\\");
+    let tail = match path.strip_prefix("\\\\") {
+        Some(unc) => unc.splitn(3, '\\').nth(2).unwrap_or(""),
+        None if path.chars().nth(1) == Some(':') => {
+            path.char_indices().nth(2).map_or("", |(at, _)| &path[at..])
+        }
+        None => &path,
+    };
+    let name = tail
+        .split('\\')
+        .rfind(|part| !part.is_empty() && *part != ".");
+    name.unwrap_or("").to_string()
+}
+
+/// `PurePosixPath(text).name`.
+pub fn posix_name(text: &str) -> String {
+    let name = text.split('/').rfind(|part| !part.is_empty() && *part != ".");
+    name.unwrap_or("").to_string()
+}
+
+/// Python's `repr(x)` of a float: `1e+21`, `0.1`, `nan`, `inf`.
+pub fn float_repr(x: f64) -> String {
+    if x.is_finite() {
+        py_repr(&json!(x))
+    } else {
+        format!("{x}").to_lowercase()
+    }
+}
+
+/// Python's `int(x)` of a float: toward zero, with the error for NaN and infinity.
+pub fn int_of(x: f64) -> Result<i64, String> {
+    if x.is_nan() {
+        Err("ValueError: cannot convert float NaN to integer".into())
+    } else if x.is_infinite() {
+        Err("OverflowError: cannot convert float infinity to integer".into())
+    } else {
+        Ok(x.trunc() as i64)
+    }
+}
+
+/// Python's `x // y` for floats and a positive `y`.
+pub fn float_floor_div(x: f64, y: f64) -> f64 {
+    let rest = x % y;
+    let div = (x - if rest < 0.0 { rest + y } else { rest }) / y;
+    let floor = div.floor();
+    if div - floor > 0.5 {
+        floor + 1.0
+    } else {
+        floor
+    }
+}
+
+/// What tells two values apart as members of a Python set or keys of a dict, with the error
+/// for a list or dict.
+pub fn hash_key(v: &Value) -> Result<String, String> {
+    match v {
+        Value::Array(_) | Value::Object(_) => {
+            Err(format!("TypeError: unhashable type: '{}'", ty(v)))
+        }
+        other => Ok(other.to_string()),
+    }
+}
+
+/// `PurePath(name).stem`: the name without its last suffix.
+pub fn stem(name: &str) -> &str {
+    match name.rfind('.') {
+        Some(dot) if !name[..dot].trim_start_matches('.').is_empty() => &name[..dot],
+        _ => name,
+    }
+}
+
+/// `path.name`, empty when there is none.
+pub fn name_of(path: &std::path::Path) -> String {
+    let name = path.file_name();
+    name.map_or_else(String::new, |n| n.to_string_lossy().into_owned())
+}
+
+/// `path.with_suffix(suffix)`.
+pub fn with_suffix(path: &std::path::Path, suffix: &str) -> std::path::PathBuf {
+    path.with_file_name(format!("{}{suffix}", stem(&name_of(path))))
+}
+
+/// `root.rglob(pattern)` for a pattern on the name alone, in pathlib's order (Python 3.13): a
+/// folder's matches, then its subfolders' matches as each is listed, the subfolder listed last
+/// walked first. Links to folders are not followed.
+pub fn rglob(root: &std::path::Path, matches: &dyn Fn(&str) -> bool) -> Vec<std::path::PathBuf> {
+    let list = |dir: &std::path::Path| -> Vec<(std::path::PathBuf, bool, bool)> {
+        let entry = |e: std::fs::DirEntry| {
+            let matched = matches(&e.file_name().to_string_lossy());
+            (e.path(), matched, e.file_type().is_ok_and(|t| t.is_dir()))
+        };
+        let entries = std::fs::read_dir(dir).ok().into_iter().flatten();
+        entries.flatten().map(entry).collect()
+    };
+    let found = |dir: &std::path::Path| list(dir).into_iter().filter(|e| e.1).map(|e| e.0);
+    let (mut out, mut stack) = (found(root).collect::<Vec<_>>(), vec![root.to_path_buf()]);
+    while let Some(dir) = stack.pop() {
+        for (path, _, _) in list(&dir).into_iter().filter(|e| e.2) {
+            out.extend(found(&path));
+            stack.push(path);
+        }
+    }
+    out
+}
